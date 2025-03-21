@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horse Racing Simulator</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Horse Racing Simulator</h1>
+        </header>
+        
+        <main>
+            <div id="game-container"></div>
+            
+            <div class="race-controls">
+                <button id="start-race">Start Race</button>
+                <button id="reset-race">Reset</button>
+            </div>
+            
+            <div class="race-info">
+                <div class="horse-lineup">
+                    <h2>Horse Lineup</h2>
+                    <div id="horse-list"></div>
+                </div>
+                
+                <div class="race-results">
+                    <h2>Race Results</h2>
+                    <div id="results-panel"></div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <div class="about-section">
+                <h3>About</h3>
+                <p>This horse racing simulator lets you experience the thrill of a horse race. Watch the race unfold and root for your favorite horse!</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <script src="js/nameGenerator.js"></script>
+    <script src="js/horse.js"></script>
+    <script src="js/race.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
