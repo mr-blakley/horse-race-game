@@ -8,45 +8,33 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>JEL Derby</h1>
-        </header>
+        <!-- Game container where Phaser will render -->
+        <div id="game-container"></div>
         
-        <main>
-            <div id="game-container">
-                <div id="game-canvas"></div>
-                
-                <!-- Horse lineup moved to center -->
-                <div class="horse-lineup">
-                    <h2>Horse Lineup</h2>
-                    <div id="horse-list"></div>
-                    <div class="race-controls">
-                        <button id="start-race" class="race-button">Start Race</button>
-                        <button id="reset-race" class="race-button">Reset</button>
-                    </div>
-                </div>
-                
-                <div class="race-info">
-                    <div id="race-time-container">
-                        <span>Race Time: </span><span id="race-time">0.00s</span>
-                    </div>
-                </div>
-                
-                <div class="race-results-container">
-                    <div class="race-results">
-                        <h2>Race Results</h2>
-                        <div id="results-panel"></div>
-                    </div>
-                </div>
+        <!-- Horse lineup positioned as top banner -->
+        <div class="top-banner horse-panel">
+            <div class="panel-header">
+                <h2>Horse Lineup</h2>
             </div>
-        </main>
+            <div id="horse-list" class="scrollable-content"></div>
+            <div class="race-controls">
+                <button id="start-race" class="race-button">Start Race</button>
+                <button id="reset-race" class="race-button">Reset</button>
+            </div>
+        </div>
         
-        <footer>
-            <div class="about-section">
-                <h3>About</h3>
-                <p>This horse racing simulator lets you experience the thrill of a horse race. Watch the race unfold and root for your favorite horse!</p>
+        <div class="race-info">
+            <div id="race-time-container">
+                <span>Race Time: </span><span id="race-time">0.00s</span>
             </div>
-        </footer>
+        </div>
+        
+        <div class="side-panel results-panel">
+            <div class="panel-header">
+                <h2>Race Results</h2>
+            </div>
+            <div id="results-panel" class="scrollable-content"></div>
+        </div>
     </div>
 
     <!-- Scripts -->
