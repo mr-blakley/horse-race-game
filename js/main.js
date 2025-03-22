@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         raceScene = game.scene.getScene('RaceScene');
         console.log("Race scene initialized:", raceScene);
+        
+        // Force a full reset to ensure 12 horses are created
+        if (raceScene) {
+            console.log("Force initializing with numHorses:", raceScene.numHorses);
+            raceScene.resetRace();
+        }
     }, 1000);
     
     startRaceButton.addEventListener('click', function() {

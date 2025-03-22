@@ -82,8 +82,8 @@ button:disabled {
 
 .horse-lineup {
     display: inline-block;
-    width: 80%;
-    max-width: 800px;
+    width: 90%;
+    max-width: 900px;
     background-color: rgba(255, 255, 255, 0.85);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -126,10 +126,11 @@ button:disabled {
 .horse-item {
     display: flex;
     align-items: center;
-    padding: 5px 8px;
+    padding: 4px 6px;
     border-radius: 4px;
     background-color: rgba(248, 249, 250, 0.9);
-    font-size: 13px;
+    font-size: 12px;
+    margin-bottom: 3px;
 }
 
 .horse-color {

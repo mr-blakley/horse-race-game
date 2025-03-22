@@ -26,11 +26,10 @@ class Horse {
         this.sprite = null;
         this.nameText = null;
         
-        // Use Lane 6's path as the reference path for all horses
-        // Lane 6 has index 5 in zero-based indexing
-        const referenceIndex = 5; // Lane 6
-        const laneWidth = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 200;
-        // Set all horses to follow Lane 6's path with minimal variation
+        // Use a middle lane as the reference path for all horses
+        const referenceIndex = Math.floor(this.scene.numHorses / 2) - 1; // For 12 horses, this will be lane 6
+        const laneWidth = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 300; // Reduced for more compact formation
+        // Set all horses to follow the middle lane's path with minimal variation
         this.laneOffset = (this.scene.numHorses - 1 - referenceIndex) * laneWidth;
         // Add a tiny offset for visual separation (1/10th of the already small lane width)
         this.laneOffset += (this.lane - referenceIndex) * (laneWidth * 0.1);
@@ -164,10 +163,10 @@ class Horse {
         this.finishTime = null;
         this.position = null;
         
-        // Use Lane 6's path as the reference path for all horses
-        const referenceIndex = 5; // Lane 6
-        const laneWidth = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 200;
-        // Set all horses to follow Lane 6's path with minimal variation
+        // Use a middle lane as the reference path for all horses
+        const referenceIndex = Math.floor(this.scene.numHorses / 2) - 1; // For 12 horses, this will be lane 6
+        const laneWidth = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 300; // Reduced for more compact formation
+        // Set all horses to follow the middle lane's path with minimal variation
         this.laneOffset = (this.scene.numHorses - 1 - referenceIndex) * laneWidth;
         // Add a tiny offset for visual separation (1/10th of the already small lane width)
         this.laneOffset += (this.lane - referenceIndex) * (laneWidth * 0.1);

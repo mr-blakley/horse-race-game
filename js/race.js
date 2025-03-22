@@ -7,7 +7,7 @@ class RaceScene extends Phaser.Scene {
         super('RaceScene');
         
         this.horses = [];
-        this.numHorses = 6;
+        this.numHorses = 12;
         this.trackLength = 1200; // Initial track length - will be updated based on dimensions
         this.raceInProgress = false;
         this.finishedHorses = [];
@@ -134,10 +134,10 @@ class RaceScene extends Phaser.Scene {
         // Update horses if they exist
         if (this.horses && this.horses.length > 0) {
             this.horses.forEach(horse => {
-                // Use Lane 6's path as the reference path for all horses
-                const referenceIndex = 5; // Lane 6
-                const laneWidth = Math.min(this.trackWidth, this.trackHeight) / 200;
-                // Set all horses to follow Lane 6's path with minimal variation
+                // Use a middle lane as the reference path for all horses (lane 6 or 7)
+                const referenceIndex = Math.floor(this.numHorses / 2) - 1; // For 12 horses, this will be lane 6
+                const laneWidth = Math.min(this.trackWidth, this.trackHeight) / 300; // Reduced for more compact formation
+                // Set all horses to follow the middle lane's path with minimal variation
                 horse.laneOffset = (this.numHorses - 1 - referenceIndex) * laneWidth;
                 // Add a tiny offset for visual separation (1/10th of the already small lane width)
                 horse.laneOffset += (horse.lane - referenceIndex) * (laneWidth * 0.1);
@@ -188,6 +188,9 @@ class RaceScene extends Phaser.Scene {
         this.horses = [];
         this.finishedHorses = [];
         
+        // Debug log
+        console.log("Initializing horse list with " + this.numHorses + " horses");
+        
         // Create horses
         const horseListElement = document.getElementById('horse-list');
         if (horseListElement) {
@@ -209,6 +212,9 @@ class RaceScene extends Phaser.Scene {
                     <div class="horse-name">Lane ${i + 1}: ${horseName}</div>
                 `;
                 horseListElement.appendChild(horseElement);
+                
+                // Debug log
+                console.log(`Added horse ${i+1}: ${horseName}`);
             }
             
             // Clear results panel
@@ -325,11 +331,21 @@ class RaceScene extends Phaser.Scene {
     }
     
     resetRace() {
-        this.raceInProgress = false;
-        this.statusText.setText('Ready to Race');
-        
-        // Re-initialize horses
-        this.initHorseList();
+        if (!this.raceInProgress) {
+            console.log("Resetting race with " + this.numHorses + " horses");
+            this.initHorseList();
+            this.statusText.setText('Ready to Race');
+            
+            // Reset buttons
+            const startRaceButton = document.getElementById('start-race');
+            if (startRaceButton) {
+                startRaceButton.disabled = false;
+            }
+        } else {
+            console.log("Cannot reset while race is in progress");
+            this.raceInProgress = false; // Force reset if race is still in progress
+            setTimeout(() => this.resetRace(), 100); // Try again after a short delay
+        }
     }
     
     update(time, delta) {
