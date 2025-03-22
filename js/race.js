@@ -313,17 +313,34 @@ class RaceScene extends Phaser.Scene {
         
         resultsPanel.innerHTML = '';
         
-        // Add race status header with lap info
+        // Add race status header with lap info and race time
         if (this.raceInProgress) {
             const statusHeader = document.createElement('div');
             statusHeader.className = 'race-status-header';
             const leadingHorse = this.horses.reduce((leader, horse) => 
                 !horse.finished && horse.distance > leader.distance ? horse : leader, this.horses[0]);
             const leadingLap = Math.min(this.totalLaps, Math.floor(leadingHorse.distance / this.trackLength) + 1);
-            statusHeader.textContent = `Race Progress: Lap ${leadingLap}/${this.totalLaps}`;
+            const currentRaceTime = ((this.time.now - this.raceStartTime) / 1000).toFixed(2);
+            statusHeader.textContent = `Race Progress: Lap ${leadingLap}/${this.totalLaps} - Time: ${currentRaceTime}s`;
             resultsPanel.appendChild(statusHeader);
         }
         
+        // Create two-column container for results
+        const resultsContainer = document.createElement('div');
+        resultsContainer.className = 'results-columns';
+        resultsPanel.appendChild(resultsContainer);
+        
+        // Create left column for first half of results
+        const leftColumn = document.createElement('div');
+        leftColumn.className = 'results-column';
+        resultsContainer.appendChild(leftColumn);
+        
+        // Create right column for second half of results
+        const rightColumn = document.createElement('div');
+        rightColumn.className = 'results-column';
+        resultsContainer.appendChild(rightColumn);
+        
+        // Distribute finished horses between columns
         this.finishedHorses.forEach((horse, index) => {
             const resultItem = document.createElement('div');
             resultItem.className = 'result-item';
@@ -339,7 +356,12 @@ class RaceScene extends Phaser.Scene {
                 <div class="result-time">Time: ${finishTime}s</div>
             `;
             
-            resultsPanel.appendChild(resultItem);
+            // Add to left column for first half, right column for second half
+            if (index < Math.ceil(this.finishedHorses.length / 2)) {
+                leftColumn.appendChild(resultItem);
+            } else {
+                rightColumn.appendChild(resultItem);
+            }
         });
         
         // Show progress for horses still racing
@@ -350,18 +372,38 @@ class RaceScene extends Phaser.Scene {
             progressHeader.textContent = 'Still Racing';
             resultsPanel.appendChild(progressHeader);
             
+            // Create two-column container for racing progress
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'results-columns';
+            resultsPanel.appendChild(progressContainer);
+            
+            // Create left and right columns for racing progress
+            const leftProgressColumn = document.createElement('div');
+            leftProgressColumn.className = 'results-column';
+            progressContainer.appendChild(leftProgressColumn);
+            
+            const rightProgressColumn = document.createElement('div');
+            rightProgressColumn.className = 'results-column';
+            progressContainer.appendChild(rightProgressColumn);
+            
             // Sort horses by distance traveled
             racingHorses.sort((a, b) => b.distance - a.distance);
             
-            // Show top 3 racing horses
-            racingHorses.slice(0, 3).forEach(horse => {
+            // Show racing horses distributed between columns
+            racingHorses.forEach((horse, index) => {
                 const progressItem = document.createElement('div');
                 progressItem.className = 'progress-item';
                 
-                const totalProgress = Math.min(100, (horse.distance / this.totalRaceDistance * 100)).toFixed(1);
+                const currentTime = ((this.time.now - this.raceStartTime) / 1000).toFixed(2);
                 const lap = Math.min(this.totalLaps, Math.floor(horse.distance / this.trackLength) + 1);
-                progressItem.textContent = `${horse.name}: Lap ${lap}/${this.totalLaps} (${totalProgress}%)`;
-                resultsPanel.appendChild(progressItem);
+                progressItem.textContent = `${horse.name}: Lap ${lap}/${this.totalLaps} - ${currentTime}s`;
+                
+                // Add to left column for first half, right column for second half
+                if (index < Math.ceil(racingHorses.length / 2)) {
+                    leftProgressColumn.appendChild(progressItem);
+                } else {
+                    rightProgressColumn.appendChild(progressItem);
+                }
             });
         }
     }
@@ -389,11 +431,12 @@ class RaceScene extends Phaser.Scene {
                     }
                     
                     if (horse.finished) {
-                        lapInfoElement.textContent = 'Finished!';
+                        const finishTime = ((horse.finishTime - this.raceStartTime) / 1000).toFixed(2);
+                        lapInfoElement.textContent = `Finished: ${finishTime}s`;
                         lapInfoElement.classList.add('finished');
                     } else {
-                        const lapProgress = Math.min(100, ((horse.distance % this.trackLength) / this.trackLength * 100)).toFixed(0);
-                        lapInfoElement.textContent = `Lap ${horse.currentLap}/${this.totalLaps} (${lapProgress}%)`;
+                        const currentTime = ((this.time.now - this.raceStartTime) / 1000).toFixed(2);
+                        lapInfoElement.textContent = `Lap ${horse.currentLap}/${this.totalLaps} - ${currentTime}s`;
                         lapInfoElement.classList.remove('finished');
                     }
                 }
@@ -443,6 +486,12 @@ class RaceScene extends Phaser.Scene {
             if (this.finishedHorses.length >= this.numHorses) {
                 this.raceInProgress = false;
                 console.log("Race completed!");
+                
+                // Re-enable start button after race is complete
+                const startRaceButton = document.getElementById('start-race');
+                if (startRaceButton) {
+                    startRaceButton.disabled = false;
+                }
             }
         }
     }
