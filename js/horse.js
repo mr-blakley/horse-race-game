@@ -18,9 +18,19 @@ class Horse {
         // Current state
         this.currentSpeed = 0;
         this.distance = 0;
+        this.currentLap = 1;
         this.finished = false;
         this.finishTime = null;
         this.position = null;
+        
+        // Lap-specific factors for variability
+        this.lapFactors = [];
+        for (let i = 0; i < this.scene.totalLaps; i++) {
+            this.lapFactors.push({
+                speedBoost: (Math.random() * 0.4) - 0.2, // Between -0.2 and 0.2
+                staminaBoost: (Math.random() * 0.3) - 0.1 // Between -0.1 and 0.2
+            });
+        }
         
         // Sprite configuration
         this.sprite = null;
@@ -108,13 +118,27 @@ class Horse {
             console.log(`Horse ${this.name} update: speed=${this.currentSpeed.toFixed(2)}, distance=${this.distance.toFixed(2)}`);
         }
         
-        // Calculate speed based on time
-        const raceProgress = this.distance / this.scene.trackLength;
-        const staminaFactor = Math.max(0.7, 1 - raceProgress / this.stamina);
+        // Calculate which lap we're on - this is critical for the 4-lap race
+        const previousLap = this.currentLap;
+        this.currentLap = Math.min(this.scene.totalLaps, Math.floor(this.distance / this.scene.trackLength) + 1);
+        
+        // Detect lap change and log it
+        if (this.currentLap > previousLap) {
+            console.log(`${this.name} starting lap ${this.currentLap} of ${this.scene.totalLaps}`);
+        }
+        
+        // Get lap-specific performance factors
+        const lapIndex = this.currentLap - 1;
+        const lapFactor = this.lapFactors[lapIndex] || { speedBoost: 0, staminaBoost: 0 };
+        
+        // Calculate speed based on time and current lap factor
+        const raceProgress = this.distance / this.scene.totalRaceDistance;
+        const staminaFactor = Math.max(0.7, 1 - raceProgress / (this.stamina + lapFactor.staminaBoost));
         const randomFactor = 1 + (Math.random() - 0.5) * this.luckFactor;
         
-        // Accelerate up to base speed
-        if (this.currentSpeed < this.baseSpeed) {
+        // Accelerate up to base speed, applying lap-specific boost
+        const lapAdjustedBaseSpeed = this.baseSpeed * (1 + lapFactor.speedBoost);
+        if (this.currentSpeed < lapAdjustedBaseSpeed) {
             this.currentSpeed += this.acceleration * (delta / 1000);
         }
         
@@ -125,8 +149,9 @@ class Horse {
         const speedScale = Math.max(1, Math.min(this.scene.trackWidth, this.scene.trackHeight) / 300);
         this.distance += actualSpeed * (delta / 1000) * 100 * speedScale;
         
-        // Get position on the oval track
-        const trackPos = this.scene.getPositionOnTrack(this.distance, this.laneOffset);
+        // Get position on the oval track - this function handles the looping
+        const lapDistance = this.distance % this.scene.trackLength;
+        const trackPos = this.scene.getPositionOnTrack(lapDistance, this.laneOffset);
         
         // Update sprite positions
         this.sprite.x = trackPos.x;
@@ -144,14 +169,14 @@ class Horse {
         const bobHeight = Math.sin(this.legMovement) * 1; // Reduced bobbing
         this.sprite.y += bobHeight;
         
-        // Check if finished
-        if (this.distance >= this.scene.trackLength) {
-            this.distance = this.scene.trackLength;
+        // Check if finished the entire race (all laps)
+        // Fix: Only finish when we've completed all laps
+        if (this.currentLap >= this.scene.totalLaps && lapDistance >= 0 && lapDistance <= 50) {
             if (!this.finished) {
                 this.finished = true;
                 this.finishTime = time;
                 this.scene.horseFinished(this);
-                console.log(`Horse ${this.name} finished the race!`);
+                console.log(`Horse ${this.name} finished the race! (${this.scene.totalLaps} laps)`);
             }
         }
     }
@@ -159,6 +184,7 @@ class Horse {
     reset() {
         this.currentSpeed = 0;
         this.distance = 0;
+        this.currentLap = 1;
         this.finished = false;
         this.finishTime = null;
         this.position = null;

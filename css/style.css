@@ -161,8 +161,55 @@ button:disabled {
 }
 
 .result-highlight {
-    background-color: rgba(234, 242, 248, 0.8);
+    background-color: #fffacd;
+    border-radius: 3px;
+    padding: 3px;
+    font-weight: bold;
     border-left: 4px solid #2e86c1;
+}
+
+/* Horse lap information */
+.horse-lap-info {
+    font-size: 0.8em;
+    color: #555;
+    margin-top: 2px;
+    padding-left: 20px;
+}
+
+.horse-lap-info.finished {
+    color: #2e86c1;
+    font-weight: bold;
+}
+
+.horse-item.finished {
+    opacity: 0.8;
+}
+
+/* Race status styling */
+.race-status-header, .progress-header {
+    font-weight: bold;
+    font-size: 0.9em;
+    margin: 4px 0;
+    padding: 3px;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+}
+
+.race-status-header {
+    background-color: #e6f2ff;
+    text-align: center;
+}
+
+.progress-header {
+    background-color: #f5f5dc;
+    margin-top: 10px;
+}
+
+.progress-item {
+    margin: 3px 0;
+    padding: 3px;
+    font-size: 0.85em;
+    color: #555;
 }
 
 footer {
