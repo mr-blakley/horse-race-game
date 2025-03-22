@@ -105,9 +105,17 @@ canvas {
 }
 
 .results-panel {
-    top: 60px;
-    right: 20px;
-    width: 280px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 100;
 }
 
 .panel-header {
@@ -124,7 +132,7 @@ canvas {
 }
 
 .scrollable-content {
-    overflow-y: auto;
+    overflow-y: hidden; /* Hide vertical scrollbar */
     flex-grow: 1;
     margin-bottom: 10px;
 }
@@ -134,7 +142,8 @@ canvas {
     flex-direction: row;
     flex-wrap: nowrap;
     gap: 15px;
-    justify-content: flex-start;
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+    overflow-y: hidden; /* Hide vertical scrollbar */
 }
 
 .horse-item {

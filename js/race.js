@@ -408,6 +408,7 @@ class RaceScene extends Phaser.Scene {
                 const horseElement = document.createElement('div');
                 horseElement.className = 'horse-item';
                 horseElement.innerHTML = `
+                    <div class="horse-position">${index + 1}</div> &nbsp;
                     <div class="horse-color" style="background-color: ${Phaser.Display.Color.IntegerToColor(horse.color).rgba}"></div>
                     <div class="horse-name">${horse.name}</div>
                 `;
