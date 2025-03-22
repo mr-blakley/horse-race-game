@@ -206,14 +206,35 @@ class RaceScene extends Phaser.Scene {
                 const horse = new Horse(this, i, horseName, Phaser.Display.Color.HexStringToColor(horseColor).color);
                 this.horses.push(horse);
                 
-                // Add horse to the HTML list
-                const horseElement = document.createElement('div');
-                horseElement.className = 'horse-item';
-                horseElement.innerHTML = `
-                    <div class="horse-color" style="background-color: ${horseColor}"></div>
-                    <div class="horse-name">Lane ${i + 1}: ${horseName}</div>
-                `;
-                horseListElement.appendChild(horseElement);
+                // Add horse to the HTML list in scoreboard style
+                const horseItem = document.createElement('div');
+                horseItem.className = 'horse-item';
+                
+                // Position marker based on initial lane
+                const position = i + 1;
+                const positionText = position <= 3 ? 
+                    ['1st', '2nd', '3rd'][position-1] : 
+                    `${position}th`;
+                
+                // Create color indicator
+                const colorIndicator = document.createElement('span');
+                colorIndicator.className = 'horse-color';
+                colorIndicator.style.backgroundColor = horseColor;
+                horseItem.appendChild(colorIndicator);
+                
+                // Create name element
+                const nameElement = document.createElement('span');
+                nameElement.className = 'horse-name';
+                nameElement.textContent = `${positionText} ${horseName}`;
+                horseItem.appendChild(nameElement);
+                
+                // Create lap indicator (all starting at lap 1)
+                const lapElement = document.createElement('span');
+                lapElement.className = 'horse-lap';
+                lapElement.textContent = `Lap 1/${this.totalLaps}`;
+                horseItem.appendChild(lapElement);
+                
+                horseListElement.appendChild(horseItem);
                 
                 // Debug log
                 console.log(`Added horse ${i+1}: ${horseName}`);
@@ -313,34 +334,17 @@ class RaceScene extends Phaser.Scene {
         
         resultsPanel.innerHTML = '';
         
-        // Add race status header with lap info and race time
+        // Add race status header with lap info
         if (this.raceInProgress) {
             const statusHeader = document.createElement('div');
             statusHeader.className = 'race-status-header';
             const leadingHorse = this.horses.reduce((leader, horse) => 
                 !horse.finished && horse.distance > leader.distance ? horse : leader, this.horses[0]);
             const leadingLap = Math.min(this.totalLaps, Math.floor(leadingHorse.distance / this.trackLength) + 1);
-            const currentRaceTime = ((this.time.now - this.raceStartTime) / 1000).toFixed(2);
-            statusHeader.textContent = `Race Progress: Lap ${leadingLap}/${this.totalLaps} - Time: ${currentRaceTime}s`;
+            statusHeader.textContent = `Race Progress: Lap ${leadingLap}/${this.totalLaps}`;
             resultsPanel.appendChild(statusHeader);
         }
         
-        // Create two-column container for results
-        const resultsContainer = document.createElement('div');
-        resultsContainer.className = 'results-columns';
-        resultsPanel.appendChild(resultsContainer);
-        
-        // Create left column for first half of results
-        const leftColumn = document.createElement('div');
-        leftColumn.className = 'results-column';
-        resultsContainer.appendChild(leftColumn);
-        
-        // Create right column for second half of results
-        const rightColumn = document.createElement('div');
-        rightColumn.className = 'results-column';
-        resultsContainer.appendChild(rightColumn);
-        
-        // Distribute finished horses between columns
         this.finishedHorses.forEach((horse, index) => {
             const resultItem = document.createElement('div');
             resultItem.className = 'result-item';
@@ -356,12 +360,7 @@ class RaceScene extends Phaser.Scene {
                 <div class="result-time">Time: ${finishTime}s</div>
             `;
             
-            // Add to left column for first half, right column for second half
-            if (index < Math.ceil(this.finishedHorses.length / 2)) {
-                leftColumn.appendChild(resultItem);
-            } else {
-                rightColumn.appendChild(resultItem);
-            }
+            resultsPanel.appendChild(resultItem);
         });
         
         // Show progress for horses still racing
@@ -372,38 +371,18 @@ class RaceScene extends Phaser.Scene {
             progressHeader.textContent = 'Still Racing';
             resultsPanel.appendChild(progressHeader);
             
-            // Create two-column container for racing progress
-            const progressContainer = document.createElement('div');
-            progressContainer.className = 'results-columns';
-            resultsPanel.appendChild(progressContainer);
-            
-            // Create left and right columns for racing progress
-            const leftProgressColumn = document.createElement('div');
-            leftProgressColumn.className = 'results-column';
-            progressContainer.appendChild(leftProgressColumn);
-            
-            const rightProgressColumn = document.createElement('div');
-            rightProgressColumn.className = 'results-column';
-            progressContainer.appendChild(rightProgressColumn);
-            
             // Sort horses by distance traveled
             racingHorses.sort((a, b) => b.distance - a.distance);
             
-            // Show racing horses distributed between columns
-            racingHorses.forEach((horse, index) => {
+            // Show top 3 racing horses
+            racingHorses.slice(0, 3).forEach(horse => {
                 const progressItem = document.createElement('div');
                 progressItem.className = 'progress-item';
                 
-                const currentTime = ((this.time.now - this.raceStartTime) / 1000).toFixed(2);
+                const totalProgress = Math.min(100, (horse.distance / this.totalRaceDistance * 100)).toFixed(1);
                 const lap = Math.min(this.totalLaps, Math.floor(horse.distance / this.trackLength) + 1);
-                progressItem.textContent = `${horse.name}: Lap ${lap}/${this.totalLaps} - ${currentTime}s`;
-                
-                // Add to left column for first half, right column for second half
-                if (index < Math.ceil(racingHorses.length / 2)) {
-                    leftProgressColumn.appendChild(progressItem);
-                } else {
-                    rightProgressColumn.appendChild(progressItem);
-                }
+                progressItem.textContent = `${horse.name}: Lap ${lap}/${this.totalLaps} (${totalProgress}%)`;
+                resultsPanel.appendChild(progressItem);
             });
         }
     }
@@ -411,36 +390,56 @@ class RaceScene extends Phaser.Scene {
     updateHorseList() {
         const horseListElement = document.getElementById('horse-list');
         if (horseListElement) {
-            const horseItems = horseListElement.querySelectorAll('.horse-item');
+            // Clear existing horse list to rebuild it
+            horseListElement.innerHTML = '';
             
-            this.horses.forEach((horse, index) => {
-                if (horseItems[index]) {
-                    // Update position class based on finished status
-                    if (horse.finished) {
-                        horseItems[index].classList.add('finished');
-                    } else {
-                        horseItems[index].classList.remove('finished');
-                    }
-                    
-                    // Update lap information
-                    let lapInfoElement = horseItems[index].querySelector('.horse-lap-info');
-                    if (!lapInfoElement) {
-                        lapInfoElement = document.createElement('div');
-                        lapInfoElement.className = 'horse-lap-info';
-                        horseItems[index].appendChild(lapInfoElement);
-                    }
-                    
-                    if (horse.finished) {
-                        const finishTime = ((horse.finishTime - this.raceStartTime) / 1000).toFixed(2);
-                        lapInfoElement.textContent = `Finished: ${finishTime}s`;
-                        lapInfoElement.classList.add('finished');
-                    } else {
-                        const currentTime = ((this.time.now - this.raceStartTime) / 1000).toFixed(2);
-                        lapInfoElement.textContent = `Lap ${horse.currentLap}/${this.totalLaps} - ${currentTime}s`;
-                        lapInfoElement.classList.remove('finished');
-                    }
+            // Sort horses by distance (leader first)
+            const sortedHorses = [...this.horses].sort((a, b) => b.distance - a.distance);
+            
+            sortedHorses.forEach((horse, index) => {
+                const horseItem = document.createElement('div');
+                horseItem.className = 'horse-item';
+                if (horse.finished) {
+                    horseItem.classList.add('finished');
                 }
+                
+                // Add position marker (1st, 2nd, 3rd, etc.)
+                const position = index + 1;
+                const positionText = position <= 3 ? 
+                    ['1st', '2nd', '3rd'][position-1] : 
+                    `${position}th`;
+                
+                // Create color indicator
+                const colorIndicator = document.createElement('span');
+                colorIndicator.className = 'horse-color';
+                colorIndicator.style.backgroundColor = horse.color;
+                horseItem.appendChild(colorIndicator);
+                
+                // Create name element
+                const nameElement = document.createElement('span');
+                nameElement.className = 'horse-name';
+                nameElement.textContent = `${positionText} ${horse.name}`;
+                horseItem.appendChild(nameElement);
+                
+                // Create lap indicator
+                const lap = Math.min(this.totalLaps, Math.floor(horse.distance / this.trackLength) + 1);
+                const lapElement = document.createElement('span');
+                lapElement.className = 'horse-lap';
+                lapElement.textContent = `Lap ${lap}/${this.totalLaps}`;
+                horseItem.appendChild(lapElement);
+                
+                horseListElement.appendChild(horseItem);
             });
+            
+            // Add race time to the scoreboard header
+            const headerElement = document.querySelector('.horse-lineup h2');
+            if (headerElement && this.raceInProgress) {
+                const currentTime = this.scene.time.now;
+                const raceTime = ((currentTime - this.raceStartTime) / 1000).toFixed(2);
+                headerElement.textContent = `Race Time: ${raceTime}s`;
+            } else if (headerElement && !this.raceInProgress) {
+                headerElement.textContent = 'Horse Lineup';
+            }
         }
     }
     
@@ -486,12 +485,6 @@ class RaceScene extends Phaser.Scene {
             if (this.finishedHorses.length >= this.numHorses) {
                 this.raceInProgress = false;
                 console.log("Race completed!");
-                
-                // Re-enable start button after race is complete
-                const startRaceButton = document.getElementById('start-race');
-                if (startRaceButton) {
-                    startRaceButton.disabled = false;
-                }
             }
         }
     }

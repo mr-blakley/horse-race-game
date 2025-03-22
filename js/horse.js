@@ -9,10 +9,10 @@ class Horse {
         this.name = name || nameGenerator.generateName();
         this.color = color || this.getRandomColor();
         
-        // Performance characteristics - make these more tightly grouped
-        this.baseSpeed = Math.random() * 0.2 + 2.0; // Narrower base speed range
-        this.stamina = Math.random() * 0.15 + 0.85; // Higher minimum stamina
-        this.acceleration = Math.random() * 0.2 + 0.4; // Consistent acceleration
+        // Performance characteristics - narrower range for more competitive racing
+        this.baseSpeed = Math.random() * 0.5 + 1.8; // Speed between 1.8 and 2.3 (tighter range)
+        this.stamina = Math.random() * 0.3 + 0.7; // Stamina between 0.7 and 1.0 (better minimum)
+        this.acceleration = Math.random() * 0.2 + 0.4; // Acceleration between 0.4 and 0.6
         this.luckFactor = Math.random() * 0.2; // Random luck factor between 0 and 0.2 (reduced variability)
         
         // Current state
@@ -22,7 +22,7 @@ class Horse {
         this.finished = false;
         this.finishTime = null;
         this.position = null;
-        this.catchUpFactor = 0; // Dynamic catch-up factor for trailing horses
+        this.catchUpFactor = 0; // New: will be used to help trailing horses catch up
         
         // Lap-specific factors for variability
         this.lapFactors = [];
@@ -137,17 +137,10 @@ class Horse {
         
         // Calculate speed based on time and current lap factor
         const raceProgress = this.distance / this.scene.totalRaceDistance;
-        const staminaFactor = Math.max(0.7, 1 - (raceProgress * (1 - this.stamina) * 0.7)); // Reduced impact of fatigue (0.7 factor)
+        const staminaFactor = Math.max(0.7, 1 - raceProgress / (this.stamina + lapFactor.staminaBoost));
         const randomFactor = 1 + (Math.random() - 0.5) * this.luckFactor;
         
-        // Apply catch-up factor to speed
-        const catchUpBoost = this.baseSpeed * this.catchUpFactor;
-        
-        // Set a minimum speed floor to prevent horses from going too slow
-        const minSpeedFactor = 0.85; // Horses will never go below 85% of their base speed
-        const speedFactor = Math.max(minSpeedFactor, staminaFactor);
-        
-        // Calculate final speed
+        // Accelerate up to base speed, applying lap-specific boost and catch-up mechanics
         const lapAdjustedBaseSpeed = this.baseSpeed * (1 + lapFactor.speedBoost + this.catchUpFactor);
         if (this.currentSpeed < lapAdjustedBaseSpeed) {
             // Faster acceleration for trailing horses
@@ -156,7 +149,7 @@ class Horse {
         }
         
         // Apply stamina and random factors
-        const actualSpeed = this.currentSpeed * speedFactor * randomFactor;
+        const actualSpeed = this.currentSpeed * staminaFactor * randomFactor;
         
         // Move horse forward - scale speed based on track size
         const speedScale = Math.max(1, Math.min(this.scene.trackWidth, this.scene.trackHeight) / 300);
@@ -222,9 +215,9 @@ class Horse {
         if (this !== leadingHorse) {
             // Calculate catch-up factor - higher for horses further behind
             // This creates a rubber-banding effect to keep races exciting
-            const maxCatchUpFactor = 0.4; // Increased from 0.3 to 0.4 (40% speed boost)
-            const minDistanceThreshold = this.scene.trackLength * 0.05; // Reduced threshold (from 10% to 5% of lap)
-            const maxDistanceThreshold = this.scene.trackLength * 0.3; // Reduced threshold (from 50% to 30% of lap)
+            const maxCatchUpFactor = 0.3; // Maximum 30% speed boost
+            const minDistanceThreshold = this.scene.trackLength * 0.1; // 10% of a lap
+            const maxDistanceThreshold = this.scene.trackLength * 0.5; // 50% of a lap
             
             if (distanceBehind > minDistanceThreshold) {
                 // Calculate catch-up factor based on distance behind leader
@@ -233,26 +226,11 @@ class Horse {
                                              (maxDistanceThreshold - minDistanceThreshold));
                 
                 // Apply stronger catch-up for horses that are farther back in position
-                this.catchUpFactor = maxCatchUpFactor * (distanceFactor * 0.6 + relativePosition * 0.4);
+                this.catchUpFactor = maxCatchUpFactor * (distanceFactor * 0.7 + relativePosition * 0.3);
                 
                 // Add extra catch-up in later laps to ensure all horses finish relatively close
                 if (this.currentLap >= this.scene.totalLaps - 1) {
-                    this.catchUpFactor *= 1.7; // Increased from 1.5 to 1.7
-                }
-                
-                // For the last place horse, add an additional boost to ensure they don't fall too far behind
-                if (thisHorseIndex === activeHorses.length - 1) {
-                    // Always give last place horse a significant boost
-                    this.catchUpFactor = Math.min(0.7, this.catchUpFactor * 2.5); // Increased from 0.6 to 0.7
-                } 
-                // For second-to-last place, also add a boost
-                else if (thisHorseIndex === activeHorses.length - 2) {
-                    this.catchUpFactor = Math.min(0.6, this.catchUpFactor * 1.8);
-                }
-                
-                // Special rule: If any horse falls more than 40% of a lap behind, give them a super boost
-                if (distanceBehind > this.scene.trackLength * 0.4) {
-                    this.catchUpFactor = Math.max(this.catchUpFactor, 0.8); // Guaranteed strong catch-up
+                    this.catchUpFactor *= 1.5;
                 }
             } else {
                 // If not far behind, gradually reduce any existing catch-up
