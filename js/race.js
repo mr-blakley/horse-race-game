@@ -60,15 +60,6 @@ class RaceScene extends Phaser.Scene {
         // Add lane dividers (now circles)
         this.createLaneDividers();
         
-        // Create race status text
-        this.statusText = this.add.text(this.scale.width / 2, 20, 'Ready to Race', {
-            fontSize: '18px',
-            fontFamily: 'Arial',
-            color: '#fff',
-            backgroundColor: '#000',
-            padding: { x: 10, y: 5 }
-        }).setOrigin(0.5, 0);
-        
         // Create countdown text
         this.countdownText = this.add.text(this.scale.width / 2, this.scale.height / 2, '', {
             fontSize: '64px',
@@ -251,9 +242,6 @@ class RaceScene extends Phaser.Scene {
         // Reset horses
         this.horses.forEach(horse => horse.reset());
         
-        // Update status
-        this.statusText.setText('Race is starting...');
-        
         // Start countdown
         this.startCountdown();
     }
@@ -291,7 +279,6 @@ class RaceScene extends Phaser.Scene {
     
     beginRace() {
         console.log("Begin race called, setting race in progress");
-        this.statusText.setText('Race in Progress');
         
         // Set the race start time to the current time when the race actually begins
         this.raceStartTime = this.time.now;
@@ -311,10 +298,9 @@ class RaceScene extends Phaser.Scene {
         this.finishedHorses.push(horse);
         horse.position = this.finishedHorses.length;
         
-        // If all horses have finished, update the race status
+        // If all horses have finished
         if (this.finishedHorses.length >= this.numHorses) {
             this.raceInProgress = false;
-            this.statusText.setText('Race Completed');
             console.log("Race completed!");
             
             // Display the winner prominently
@@ -326,7 +312,6 @@ class RaceScene extends Phaser.Scene {
             this.updateResultsPanel();
         } else if (this.finishedHorses.length === 1) {
             // Update status for first place finisher
-            this.statusText.setText(`${horse.name} takes first place!`);
         }
         
         // Update results panel
@@ -421,7 +406,6 @@ class RaceScene extends Phaser.Scene {
         if (!this.raceInProgress) {
             console.log("Resetting race with " + this.numHorses + " horses");
             this.initHorseList();
-            this.statusText.setText('Ready to Race');
             
             // Reset buttons
             const startRaceButton = document.getElementById('start-race');
