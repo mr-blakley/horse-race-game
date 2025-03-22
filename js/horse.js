@@ -91,7 +91,7 @@ class Horse {
         
         // Lane number - position relative to track dimensions
         const laneTextY = this.scene.trackCenterY - (this.scene.trackHeight * 0.4) + (this.lane * (this.scene.trackHeight * 0.06));
-        this.laneText = this.scene.add.text(20, laneTextY, this.lane + 1, { 
+        this.laneText = this.scene.add.text(20, laneTextY, `Lane ${this.lane + 1}: ${this.name}`, { 
             fontSize: '14px', 
             fontFamily: 'Arial',
             color: '#000'
