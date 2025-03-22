@@ -398,34 +398,20 @@ class RaceScene extends Phaser.Scene {
     updateHorseList() {
         const horseListElement = document.getElementById('horse-list');
         if (horseListElement) {
-            const horseItems = horseListElement.querySelectorAll('.horse-item');
-            
-            this.horses.forEach((horse, index) => {
-                if (horseItems[index]) {
-                    // Update position class based on finished status
-                    if (horse.finished) {
-                        horseItems[index].classList.add('finished');
-                    } else {
-                        horseItems[index].classList.remove('finished');
-                    }
-                    
-                    // Update lap information
-                    let lapInfoElement = horseItems[index].querySelector('.horse-lap-info');
-                    if (!lapInfoElement) {
-                        lapInfoElement = document.createElement('div');
-                        lapInfoElement.className = 'horse-lap-info';
-                        horseItems[index].appendChild(lapInfoElement);
-                    }
-                    
-                    if (horse.finished) {
-                        lapInfoElement.textContent = 'Finished!';
-                        lapInfoElement.classList.add('finished');
-                    } else {
-                        const lapProgress = Math.min(100, ((horse.distance % this.trackLength) / this.trackLength * 100)).toFixed(0);
-                        lapInfoElement.textContent = `Lap ${horse.currentLap}/${this.totalLaps} (${lapProgress}%)`;
-                        lapInfoElement.classList.remove('finished');
-                    }
-                }
+            horseListElement.innerHTML = ''; // Clear the current list
+
+            // Sort horses by distance
+            const sortedHorses = this.horses.slice().sort((a, b) => b.distance - a.distance);
+
+            // Display top 6 horses
+            sortedHorses.slice(0, 7).forEach((horse, index) => {
+                const horseElement = document.createElement('div');
+                horseElement.className = 'horse-item';
+                horseElement.innerHTML = `
+                    <div class="horse-color" style="background-color: ${Phaser.Display.Color.IntegerToColor(horse.color).rgba}"></div>
+                    <div class="horse-name">${horse.name}</div>
+                `;
+                horseListElement.appendChild(horseElement);
             });
         }
     }
