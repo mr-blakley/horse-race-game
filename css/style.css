@@ -40,40 +40,34 @@ header {
 
 .race-controls {
     display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 10px;
+    justify-content: space-evenly;
+    margin-top: 15px;
     padding-top: 10px;
-    border-top: 1px solid #444;
+    border-top: 1px solid #eee;
 }
 
 .race-button {
-    background-color: #ffcc00;
-    color: #000;
+    background-color: #3498db;
+    color: white;
     border: none;
     border-radius: 4px;
     padding: 8px 16px;
     font-size: 0.9em;
     cursor: pointer;
-    transition: all 0.2s;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    transition: background-color 0.2s;
+    margin: 0 5px;
 }
 
 .race-button:hover {
-    background-color: #ffd700;
-    transform: scale(1.05);
+    background-color: #2980b9;
 }
 
 .race-button:active {
-    background-color: #e6b800;
-    transform: scale(0.98);
+    background-color: #1c6ea4;
 }
 
 .race-button:disabled {
-    background-color: #665500;
-    color: #aaa;
+    background-color: #95a5a6;
     cursor: not-allowed;
 }
 
@@ -88,94 +82,27 @@ header {
     pointer-events: none;
 }
 
-/* Horse lineup panel - scoreboard style */
 .horse-lineup {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80%;
-    max-width: 800px;
-    background-color: rgba(0, 0, 0, 0.7);
+    width: 300px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background-color: rgba(255, 255, 255, 0.85);
     border-radius: 8px;
-    padding: 10px 15px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     z-index: 20;
-    color: white;
-    text-align: center;
 }
 
 .horse-lineup h2 {
     text-align: center;
-    margin: 0 0 10px 0;
+    margin-top: 0;
     padding-bottom: 5px;
-    border-bottom: 1px solid #555;
+    border-bottom: 1px solid #ddd;
     font-size: 1.2em;
-    color: #ffcc00;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-#horse-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.horse-item {
-    display: flex;
-    align-items: center;
-    width: 200px;
-    background-color: rgba(40, 40, 40, 0.7);
-    border: 1px solid #444;
-    border-radius: 4px;
-    padding: 8px 10px;
-    transition: all 0.2s;
-}
-
-.horse-item:hover {
-    background-color: rgba(60, 60, 60, 0.8);
-    transform: scale(1.02);
-}
-
-.horse-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
-    display: inline-block;
-    box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
-}
-
-.horse-name {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 0.9em;
-    color: #fff;
-    font-weight: 600;
-}
-
-.horse-lap {
-    margin-left: 5px;
-    font-size: 0.8em;
-    color: #ffcc00;
-    font-weight: bold;
-}
-
-.race-info {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    font-weight: bold;
-    z-index: 10;
 }
 
 .race-results-container {
@@ -209,6 +136,57 @@ header {
     margin-bottom: 5px;
     font-size: 16px;
     text-align: center;
+}
+
+#horse-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+}
+
+.horse-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 5px 0;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.horse-item:hover {
+    background-color: rgba(240, 240, 240, 0.8);
+}
+
+.horse-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+.horse-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.9em;
+}
+
+.race-info {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: bold;
+    z-index: 10;
 }
 
 .result-item {

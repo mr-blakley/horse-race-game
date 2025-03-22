@@ -176,8 +176,11 @@ class Horse {
         this.sprite.y += bobHeight;
         
         // Check if finished the entire race (all laps)
-        // Fix: Only finish when we've completed all laps
-        if (this.currentLap >= this.scene.totalLaps && lapDistance >= 0 && lapDistance <= 50) {
+        // The horse should finish when it completes 4 laps (last lap)
+        const totalDistance = this.scene.totalLaps * this.scene.trackLength;
+        
+        // Check if the horse has reached the finish line on the 4th lap
+        if (this.distance >= totalDistance && lapDistance >= 0 && lapDistance <= 50) {
             if (!this.finished) {
                 this.finished = true;
                 this.finishTime = time;
