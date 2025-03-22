@@ -26,8 +26,14 @@ class Horse {
         this.sprite = null;
         this.nameText = null;
         
-        // Starting position in the track oval
-        this.laneOffset = 20 + (this.lane * 15); // Offset for lane positions
+        // Use Lane 6's path as the reference path for all horses
+        // Lane 6 has index 5 in zero-based indexing
+        const referenceIndex = 5; // Lane 6
+        const laneWidth = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 200;
+        // Set all horses to follow Lane 6's path with minimal variation
+        this.laneOffset = (this.scene.numHorses - 1 - referenceIndex) * laneWidth;
+        // Add a tiny offset for visual separation (1/10th of the already small lane width)
+        this.laneOffset += (this.lane - referenceIndex) * (laneWidth * 0.1);
         
         // Initialize sprite
         this.createSprite();
@@ -59,8 +65,9 @@ class Horse {
         // Create horse sprite using the silhouette image
         this.sprite = this.scene.add.image(startPosition.x, startPosition.y, 'horse');
         
-        // Scale the sprite to a smaller size
-        this.sprite.setScale(0.1);
+        // Scale the sprite to an even smaller size
+        const scaleBase = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 8000;
+        this.sprite.setScale(Math.max(0.015, scaleBase));
         
         // Apply color tint to the horse silhouette
         this.sprite.setTint(this.color);
@@ -71,18 +78,23 @@ class Horse {
         // Add running animation
         this.legMovement = 0;
         
-        // Lane number
-        this.laneText = this.scene.add.text(20, this.scene.trackCenterY - this.scene.trackHeight/2 + this.lane * 20, this.lane + 1, { 
-            fontSize: '16px', 
+        // Lane number - position relative to track dimensions
+        const laneTextY = this.scene.trackCenterY - (this.scene.trackHeight * 0.4) + (this.lane * (this.scene.trackHeight * 0.06));
+        this.laneText = this.scene.add.text(20, laneTextY, this.lane + 1, { 
+            fontSize: '14px', 
             fontFamily: 'Arial',
             color: '#000'
         });
         
-        // Horse name follows the horse
-        this.nameText = this.scene.add.text(startPosition.x - 40, startPosition.y - 20, this.name, { 
-            fontSize: '14px', 
+        // Horse name follows the horse - adjust text position based on horse size
+        const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
+        const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
+        this.nameText = this.scene.add.text(startPosition.x - nameOffsetX, startPosition.y - nameOffsetY, this.name, { 
+            fontSize: '10px', 
             fontFamily: 'Arial',
-            color: '#000'
+            color: '#000',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            padding: { x: 2, y: 1 }
         });
         
         // Group all elements
@@ -110,8 +122,9 @@ class Horse {
         // Apply stamina and random factors
         const actualSpeed = this.currentSpeed * staminaFactor * randomFactor;
         
-        // Move horse forward
-        this.distance += actualSpeed * (delta / 1000) * 100; // Adjusted for oval track
+        // Move horse forward - scale speed based on track size
+        const speedScale = Math.max(1, Math.min(this.scene.trackWidth, this.scene.trackHeight) / 300);
+        this.distance += actualSpeed * (delta / 1000) * 100 * speedScale;
         
         // Get position on the oval track
         const trackPos = this.scene.getPositionOnTrack(this.distance, this.laneOffset);
@@ -120,12 +133,16 @@ class Horse {
         this.sprite.x = trackPos.x;
         this.sprite.y = trackPos.y;
         this.sprite.rotation = trackPos.rotation + Math.PI/2; // Add 90° to point along the track
-        this.nameText.x = trackPos.x - 40;
-        this.nameText.y = trackPos.y - 20;
+        
+        // Update name text position
+        const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
+        const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
+        this.nameText.x = trackPos.x - nameOffsetX;
+        this.nameText.y = trackPos.y - nameOffsetY;
         
         // Add a slight bobbing motion for running effect
         this.legMovement += delta * 0.01;
-        const bobHeight = Math.sin(this.legMovement) * 2;
+        const bobHeight = Math.sin(this.legMovement) * 1; // Reduced bobbing
         this.sprite.y += bobHeight;
         
         // Check if finished
@@ -147,13 +164,26 @@ class Horse {
         this.finishTime = null;
         this.position = null;
         
+        // Use Lane 6's path as the reference path for all horses
+        const referenceIndex = 5; // Lane 6
+        const laneWidth = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 200;
+        // Set all horses to follow Lane 6's path with minimal variation
+        this.laneOffset = (this.scene.numHorses - 1 - referenceIndex) * laneWidth;
+        // Add a tiny offset for visual separation (1/10th of the already small lane width)
+        this.laneOffset += (this.lane - referenceIndex) * (laneWidth * 0.1);
+        
         // Reset position back to starting position
         const startPosition = this.scene.getPositionOnTrack(0, this.laneOffset);
         this.sprite.x = startPosition.x;
         this.sprite.y = startPosition.y;
         this.sprite.rotation = startPosition.rotation + Math.PI/2;
-        this.nameText.x = startPosition.x - 40;
-        this.nameText.y = startPosition.y - 20;
+        
+        // Update name text position
+        const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
+        const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
+        this.nameText.x = startPosition.x - nameOffsetX;
+        this.nameText.y = startPosition.y - nameOffsetY;
+        
         this.legMovement = 0;
     }
     

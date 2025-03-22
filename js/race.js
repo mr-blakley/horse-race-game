@@ -8,16 +8,16 @@ class RaceScene extends Phaser.Scene {
         
         this.horses = [];
         this.numHorses = 6;
-        this.trackLength = 1200; // Increased track length for oval path
+        this.trackLength = 1200; // Initial track length - will be updated based on dimensions
         this.raceInProgress = false;
         this.finishedHorses = [];
         this.raceStartTime = 0;
         
-        // Oval track parameters
-        this.trackWidth = 700;
-        this.trackHeight = 300;
-        this.trackCenterX = 400;
-        this.trackCenterY = 200;
+        // Initialize track parameters - will be updated in create()
+        this.trackWidth = 0;
+        this.trackHeight = 0;
+        this.trackCenterX = 0;
+        this.trackCenterY = 0;
     }
     
     preload() {
@@ -31,31 +31,32 @@ class RaceScene extends Phaser.Scene {
     }
     
     create() {
+        // Set track dimensions based on screen size
+        this.updateTrackDimensions();
+        
         // Create track background
         this.trackBackground = this.add.image(0, 0, 'track').setOrigin(0, 0);
         this.trackBackground.displayWidth = this.scale.width;
-        this.trackBackground.displayHeight = 400;
+        this.trackBackground.displayHeight = this.scale.height;
         
         // Add finish line
-        this.finishLine = this.add.image(this.trackCenterX + 250, this.trackCenterY - 50, 'finishLine').setOrigin(0.5, 1);
+        this.finishLine = this.add.image(this.trackCenterX + (this.trackWidth * 0.35), this.trackCenterY - (this.trackHeight * 0.15), 'finishLine').setOrigin(0.5, 1);
         this.finishLine.displayWidth = 10;
-        this.finishLine.displayHeight = 100;
+        this.finishLine.displayHeight = this.trackHeight * 0.3;
         this.finishLine.rotation = Math.PI / 2; // Rotate to be vertical
         
         // Starting line is at the same position for oval track
         this.startLine = this.add.graphics();
         this.startLine.lineStyle(2, 0xffffff, 1);
-        this.startLine.lineBetween(this.trackCenterX + 250, this.trackCenterY - 100, this.trackCenterX + 250, this.trackCenterY);
+        this.startLine.lineBetween(
+            this.trackCenterX + (this.trackWidth * 0.35), 
+            this.trackCenterY - (this.trackHeight * 0.3), 
+            this.trackCenterX + (this.trackWidth * 0.35), 
+            this.trackCenterY
+        );
         
         // Add lane dividers (now circles)
-        this.lanes = this.add.graphics();
-        this.lanes.lineStyle(1, 0xaaaaaa, 0.5);
-        for (let i = 1; i < this.numHorses; i++) {
-            // Draw an ellipse for each lane divider
-            const radiusX = this.trackWidth / 2 - (i * 15);
-            const radiusY = this.trackHeight / 2 - (i * 15);
-            this.lanes.strokeEllipse(this.trackCenterX, this.trackCenterY, radiusX * 2, radiusY * 2);
-        }
+        this.createLaneDividers();
         
         // Create race status text
         this.statusText = this.add.text(this.scale.width / 2, 20, 'Ready to Race', {
@@ -67,7 +68,7 @@ class RaceScene extends Phaser.Scene {
         }).setOrigin(0.5, 0);
         
         // Create countdown text
-        this.countdownText = this.add.text(this.scale.width / 2, 200, '', {
+        this.countdownText = this.add.text(this.scale.width / 2, this.scale.height / 2, '', {
             fontSize: '64px',
             fontFamily: 'Arial',
             color: '#fff',
@@ -80,6 +81,105 @@ class RaceScene extends Phaser.Scene {
         this.initHorseList();
 
         console.log("Race scene created and ready");
+    }
+    
+    // Method to update track dimensions based on screen size
+    updateTrackDimensions() {
+        // Set track center to center of screen
+        this.trackCenterX = this.scale.width / 2;
+        this.trackCenterY = this.scale.height / 2;
+        
+        // Set track size based on screen dimensions
+        this.trackWidth = this.scale.width * 0.85;
+        this.trackHeight = this.scale.height * 0.75;
+        
+        // Update track length based on dimensions - approximate the oval circumference
+        const a = this.trackWidth / 2; // semi-major axis
+        const b = this.trackHeight / 2; // semi-minor axis
+        // Approximate ellipse circumference using the formula: 2π * sqrt((a² + b²) / 2)
+        this.trackLength = 2 * Math.PI * Math.sqrt((a * a + b * b) / 2);
+        
+        // Regenerate track assets with new dimensions
+        this.createPlaceholderAssets();
+        
+        // Update track display if it exists
+        if (this.trackBackground) {
+            this.trackBackground.displayWidth = this.scale.width;
+            this.trackBackground.displayHeight = this.scale.height;
+        }
+        
+        // Update finish line if it exists
+        if (this.finishLine) {
+            this.finishLine.setPosition(this.trackCenterX + (this.trackWidth * 0.35), this.trackCenterY - (this.trackHeight * 0.15));
+            this.finishLine.displayHeight = this.trackHeight * 0.3;
+        }
+        
+        // Update start line if it exists
+        if (this.startLine) {
+            this.startLine.clear();
+            this.startLine.lineStyle(2, 0xffffff, 1);
+            this.startLine.lineBetween(
+                this.trackCenterX + (this.trackWidth * 0.35), 
+                this.trackCenterY - (this.trackHeight * 0.3), 
+                this.trackCenterX + (this.trackWidth * 0.35), 
+                this.trackCenterY
+            );
+        }
+        
+        // Update lane dividers
+        if (this.lanes) {
+            this.createLaneDividers();
+        }
+        
+        // Update horses if they exist
+        if (this.horses && this.horses.length > 0) {
+            this.horses.forEach(horse => {
+                // Use Lane 6's path as the reference path for all horses
+                const referenceIndex = 5; // Lane 6
+                const laneWidth = Math.min(this.trackWidth, this.trackHeight) / 200;
+                // Set all horses to follow Lane 6's path with minimal variation
+                horse.laneOffset = (this.numHorses - 1 - referenceIndex) * laneWidth;
+                // Add a tiny offset for visual separation (1/10th of the already small lane width)
+                horse.laneOffset += (horse.lane - referenceIndex) * (laneWidth * 0.1);
+                
+                // Update horse position if not in a race
+                if (!this.raceInProgress) {
+                    const startPosition = this.getPositionOnTrack(0, horse.laneOffset);
+                    if (horse.sprite) {
+                        horse.sprite.x = startPosition.x;
+                        horse.sprite.y = startPosition.y;
+                        horse.sprite.rotation = startPosition.rotation + Math.PI/2;
+                    }
+                    if (horse.nameText) {
+                        const nameOffsetX = horse.sprite.width * horse.sprite.scale * 0.5;
+                        const nameOffsetY = horse.sprite.height * horse.sprite.scale * 0.5;
+                        horse.nameText.x = startPosition.x - nameOffsetX;
+                        horse.nameText.y = startPosition.y - nameOffsetY;
+                    }
+                }
+            });
+        }
+    }
+    
+    // Method to create lane dividers
+    createLaneDividers() {
+        if (this.lanes) {
+            this.lanes.clear();
+        } else {
+            this.lanes = this.add.graphics();
+        }
+        
+        this.lanes.lineStyle(1, 0xaaaaaa, 0.5);
+        
+        // Draw a single ellipse for the track boundary
+        const outerRadiusX = this.trackWidth / 2;
+        const outerRadiusY = this.trackHeight / 2;
+        this.lanes.strokeEllipse(this.trackCenterX, this.trackCenterY, outerRadiusX * 2, outerRadiusY * 2);
+        
+        // Draw inner ellipse (to create an oval ring)
+        const innerRadiusX = this.trackWidth / 2 - (this.trackWidth / 10);
+        const innerRadiusY = this.trackHeight / 2 - (this.trackHeight / 10);
+        this.lanes.strokeEllipse(this.trackCenterX, this.trackCenterY, innerRadiusX * 2, innerRadiusY * 2);
     }
     
     initHorseList() {
@@ -251,9 +351,13 @@ class RaceScene extends Phaser.Scene {
         // Calculate angle based on normalized distance (0 to 2π)
         const angle = normalizedDistance * Math.PI * 2;
         
-        // Lane offset reduces the radius (inner lanes have smaller radius)
-        const radiusX = this.trackWidth / 2 - laneOffset;
-        const radiusY = this.trackHeight / 2 - laneOffset;
+        // Calculate the base radius (without lane offset) - increased for larger path
+        const baseRadiusX = (this.trackWidth / 2) - (this.trackWidth / 55);
+        const baseRadiusY = (this.trackHeight / 2) - (this.trackHeight / 55);
+        
+        // Apply lane offset - smaller offset for more similar paths
+        const radiusX = baseRadiusX - laneOffset;
+        const radiusY = baseRadiusY - laneOffset;
         
         // Calculate position on the oval
         const x = this.trackCenterX + radiusX * Math.cos(angle);
@@ -269,9 +373,13 @@ class RaceScene extends Phaser.Scene {
         // Create track texture
         const trackGraphics = this.make.graphics({x: 0, y: 0, add: false});
         
+        // Get current dimensions
+        const width = this.scale.width || 800;
+        const height = this.scale.height || 600;
+        
         // Draw grass background
         trackGraphics.fillStyle(0x55aa55);
-        trackGraphics.fillRect(0, 0, 800, 400);
+        trackGraphics.fillRect(0, 0, width, height);
         
         // Draw oval-shaped track
         trackGraphics.fillStyle(0xbbaa88);
@@ -282,9 +390,9 @@ class RaceScene extends Phaser.Scene {
         const outerWidth = this.trackWidth;
         const outerHeight = this.trackHeight;
         
-        // Draw inner ellipse (to create an oval ring)
-        const innerWidth = this.trackWidth - 120;
-        const innerHeight = this.trackHeight - 120;
+        // Draw inner ellipse (to create an oval ring) - adjusted for larger path
+        const innerWidth = this.trackWidth - (this.trackWidth / 10);
+        const innerHeight = this.trackHeight - (this.trackHeight / 10);
         
         // Fill the outer ellipse
         trackGraphics.fillEllipse(outerX, outerY, outerWidth, outerHeight);
@@ -294,7 +402,7 @@ class RaceScene extends Phaser.Scene {
         trackGraphics.fillEllipse(outerX, outerY, innerWidth, innerHeight);
         
         // Generate texture
-        trackGraphics.generateTexture('track', 800, 400);
+        trackGraphics.generateTexture('track', width, height);
         
         // Create finish line texture
         const finishGraphics = this.make.graphics({x: 0, y: 0, add: false});

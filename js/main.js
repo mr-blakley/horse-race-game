@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configure and start Phaser game
     const config = {
         type: Phaser.AUTO,
-        width: 800,
-        height: 400,
+        width: window.innerWidth,
+        height: window.innerHeight,
         parent: 'game-container',
         scene: [RaceScene],
         backgroundColor: '#55aa55',
@@ -68,14 +68,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to adjust the game container size on window resize
     function resizeGameContainer() {
-        const container = document.getElementById('game-container');
-        const containerWidth = container.clientWidth;
-        
-        if (game.scale && containerWidth < 800) {
-            const scale = containerWidth / 800;
-            game.scale.resize(containerWidth, 400 * scale);
-        } else if (game.scale) {
-            game.scale.resize(800, 400);
+        if (game.scale) {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+            
+            // Update the race scene track dimensions if it exists
+            if (raceScene) {
+                raceScene.updateTrackDimensions();
+            }
         }
     }
     
