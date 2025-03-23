@@ -144,11 +144,8 @@ class Horse {
         // Lane number - position relative to track dimensions
         const laneTextY = this.scene.trackCenterY - (this.scene.trackHeight * 0.4) + (this.lane * (this.scene.trackHeight * 0.06));
         
-        // Format horse traits as a string
-        const traitsText = this.traits.join(", ");
-        
         // Display horse name and traits in the left panel
-        this.laneText = this.scene.add.text(20, laneTextY, `#${this.lane + 1}: ${this.name} (${traitsText})`, { 
+        this.laneText = this.scene.add.text(20, laneTextY, `#${this.lane + 1}: ${this.name}`, { 
             fontSize: '16px', 
             fontFamily: 'Arial',
             color: '#000'
@@ -562,9 +559,8 @@ class Horse {
         
         // Update the lane text with new traits
         if (this.laneText) {
-            // Format horse traits as a string
-            const traitsText = this.traits.join(", ");
-            this.laneText.setText(`#${this.lane + 1}: ${this.name} (${traitsText})`);
+            // Only update the lane number and name, without traits
+            this.laneText.setText(`#${this.lane + 1}: ${this.name}`);
         }
         
         this.legMovement = 0;
