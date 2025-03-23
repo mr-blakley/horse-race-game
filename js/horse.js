@@ -99,6 +99,9 @@ class Horse {
         const scaleBase = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 8000;
         this.sprite.setScale(Math.max(0.015, scaleBase));
         
+        // Flip the sprite horizontally so horses face left at the start of the race
+        this.sprite.scaleX = -this.sprite.scaleX;
+        
         // Apply color tint to the horse silhouette
         this.sprite.setTint(this.color);
         
@@ -111,7 +114,7 @@ class Horse {
         // Lane number - position relative to track dimensions
         const laneTextY = this.scene.trackCenterY - (this.scene.trackHeight * 0.4) + (this.lane * (this.scene.trackHeight * 0.06));
         this.laneText = this.scene.add.text(20, laneTextY, `Lane ${this.lane + 1}: ${this.name}`, { 
-            fontSize: '14px', 
+            fontSize: '16px', 
             fontFamily: 'Arial',
             color: '#000'
         });
@@ -120,7 +123,7 @@ class Horse {
         const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
         const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
         this.nameText = this.scene.add.text(startPosition.x - nameOffsetX, startPosition.y - nameOffsetY, this.name, { 
-            fontSize: '10px', 
+            fontSize: '14px', 
             fontFamily: 'Arial',
             color: '#000',
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
@@ -213,7 +216,17 @@ class Horse {
         // Update sprite positions
         this.sprite.x = trackPos.x;
         this.sprite.y = trackPos.y;
-        this.sprite.rotation = trackPos.rotation + Math.PI/2; 
+        
+        // Determine if the horse is moving left or right based on rotation
+        // When moving left (rotation between PI/2 and 3*PI/2), flip the sprite
+        const isMovingLeft = trackPos.rotation > Math.PI/2 && trackPos.rotation < 3*Math.PI/2;
+        
+        // Set scale to flip horizontally when moving left
+        const currentScale = Math.abs(this.sprite.scaleX);
+        this.sprite.scaleX = -currentScale;
+        
+        // Set rotation based on track position
+        this.sprite.rotation = trackPos.rotation + Math.PI/2;
         
         // Update name text position
         if (this.nameText) {
