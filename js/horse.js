@@ -9,16 +9,38 @@ class Horse {
         this.name = name || nameGenerator.generateName();
         this.color = color || this.getRandomColor();
         
-        // Total equality approach - all horses have similar base stats
-        // Small differences create tight pack racing
-        const baseSpeedValue = 1.9; 
-        const baseStaminaValue = 0.85;
-        const baseAccelerationValue = 0.3; 
+        // Different horses have different skills - some are fast, some have stamina, some accelerate quickly
+        // This creates more varied and strategic racing
         
-        // Very small random variation to create slight differences
-        this.baseSpeed = baseSpeedValue + (Math.random() * 0.06) - 0.03; // 1.37 to 1.43 (tighter range)
-        this.stamina = baseStaminaValue + (Math.random() * 0.06) - 0.03; // 0.82 to 0.88 (tighter range)
-        this.acceleration = baseAccelerationValue + (Math.random() * 0.06) - 0.03; // 0.27 to 0.33 (tighter range)
+        // Generate random skill distribution - each horse will excel in different areas
+        const totalSkillPoints = 3.75; // Total skill points to distribute
+        const skillVariance = 0.3; // How much variance to allow in total skill points
+        
+        // Randomize total skill points slightly to create some overall better/worse horses
+        const adjustedSkillPoints = totalSkillPoints + (Math.random() * skillVariance * 2) - skillVariance;
+        
+        // Distribute skill points with some randomness
+        const speedWeight = Math.random() * 0.6 + 0.7; // 0.7-1.3 (speed is important for all horses)
+        const staminaWeight = Math.random() * 0.8 + 0.6; // 0.6-1.4
+        const accelerationWeight = Math.random() * 0.8 + 0.6; // 0.6-1.4
+        
+        // Normalize weights so they sum to 1.0
+        const totalWeight = speedWeight + staminaWeight + accelerationWeight;
+        const normalizedSpeedWeight = speedWeight / totalWeight;
+        const normalizedStaminaWeight = staminaWeight / totalWeight;
+        const normalizedAccelerationWeight = accelerationWeight / totalWeight;
+        
+        // Calculate base stats based on weights
+        this.baseSpeed = (normalizedSpeedWeight * adjustedSkillPoints * 2.5) + 1.0; // Range ~1.5-3.5
+        this.stamina = (normalizedStaminaWeight * adjustedSkillPoints * 0.8) + 0.4; // Range ~0.6-1.2
+        this.acceleration = (normalizedAccelerationWeight * adjustedSkillPoints * 0.4) + 0.2; // Range ~0.3-0.6
+        
+        // Create descriptive traits based on stats
+        this.traits = [];
+        if (this.baseSpeed > 2.8) this.traits.push("Fast");
+        if (this.stamina > 1.0) this.traits.push("Endurance");
+        if (this.acceleration > 0.5) this.traits.push("Quick Starter");
+        if (this.traits.length === 0) this.traits.push("Balanced");
         
         // Moderate luck factor - still allows for some randomness
         this.luckFactor = Math.random() * 0.2 + 0.05; // Between 0.05 and 0.25 (reduced)
@@ -121,7 +143,12 @@ class Horse {
         
         // Lane number - position relative to track dimensions
         const laneTextY = this.scene.trackCenterY - (this.scene.trackHeight * 0.4) + (this.lane * (this.scene.trackHeight * 0.06));
-        this.laneText = this.scene.add.text(20, laneTextY, `#${this.lane + 1}: ${this.name}`, { 
+        
+        // Format horse traits as a string
+        const traitsText = this.traits.join(", ");
+        
+        // Display horse name and traits in the left panel
+        this.laneText = this.scene.add.text(20, laneTextY, `#${this.lane + 1}: ${this.name} (${traitsText})`, { 
             fontSize: '16px', 
             fontFamily: 'Arial',
             color: '#000'
@@ -199,24 +226,26 @@ class Horse {
         const raceProgress = this.distance / this.scene.totalRaceDistance;
         const staminaFactor = Math.max(0.7, 1 - raceProgress / (this.stamina + lapFactor.staminaBoost));
         
-        // More variable random factor that changes each update
-        const instantRandomFactor = 1 + (Math.random() - 0.5) * (this.luckFactor + 0.15);
+        // Reduced random factor that changes each update - less chaotic
+        const instantRandomFactor = 1 + (Math.random() - 0.5) * (this.luckFactor * 0.5); // Reduced from luckFactor + 0.15
         const raceEventFactor = this.eventMultiplier; 
         
-        // Accelerate up to base speed, applying all factors
-        const targetSpeed = this.baseSpeed * (1 + lapFactor.speedBoost + this.catchUpFactor - this.leadHandicap + this.momentum);
+        // Accelerate up to base speed, applying all factors with more consistency
+        const targetSpeed = this.baseSpeed * staminaFactor * instantRandomFactor * raceEventFactor * 
+                           (1 + lapFactor.speedBoost + (this.catchUpFactor * 0.7) - (this.leadHandicap * 0.7) + (this.momentum * 0.8));
         
+        // More gradual speed changes for smoother racing
         if (this.currentSpeed < targetSpeed) {
-            // Faster acceleration for trailing horses
-            const accelerationBoost = 1 + this.catchUpFactor;
-            this.currentSpeed += this.acceleration * accelerationBoost * (delta / 1000);
-        } else if (this.currentSpeed > targetSpeed * 1.1) {
+            // Moderate acceleration for trailing horses
+            const accelerationBoost = 1 + (this.catchUpFactor * 0.6); // Reduced from full catchUpFactor
+            this.currentSpeed += (this.acceleration * accelerationBoost * (delta / 1000)) * 0.8; // 80% of original acceleration
+        } else if (this.currentSpeed > targetSpeed * 1.05) { // Reduced threshold from 1.1
             // Decelerate if going too fast (momentum or events pushed speed too high)
-            this.currentSpeed -= this.acceleration * 0.5 * (delta / 1000);
+            this.currentSpeed -= (this.acceleration * 0.5 * (delta / 1000)) * 0.8; // 80% of original deceleration
         }
         
         // Ensure minimum speed for all horses (creates a more consistent and exciting race)
-        const minRaceSpeed = 0.7 + (this.catchUpFactor * 1.5); 
+        const minRaceSpeed = 0.7 + (this.catchUpFactor * 0.8); // Reduced from catchUpFactor * 1.5
         this.currentSpeed = Math.max(minRaceSpeed, this.currentSpeed);
         
         // Apply all speed factors
@@ -309,55 +338,49 @@ class Horse {
                     this.eventMultiplier = 1.0;
                     
                     // Schedule next event - less frequent events
-                    this.nextEventTime = time - this.scene.raceStartTime + 5000 + Math.random() * 7000;
+                    this.nextEventTime = time - this.scene.raceStartTime + 8000 + Math.random() * 7000; // Increased time between events
                 }
             } else {
                 // Start a new random event with reduced chances and less dramatic effects
                 const eventChance = Math.random();
                 
-                if (eventChance < 0.12) {
-                    // Burst of speed (12% chance, down from 20%)
+                if (eventChance < 0.12) { // Reduced from 0.12
+                    // Burst of speed (8% chance, down from 12%)
                     this.currentEvent = "burst of speed";
-                    this.eventMultiplier = 1.25; // Reduced from 1.5
+                    this.eventMultiplier = 1.15; // Reduced from 1.25
                     this.eventDuration = 800 + Math.random() * 1200;
                     console.log(`${this.name} finds a burst of speed!`);
-                } else if (eventChance < 0.24) {
-                    // Slow down (12% chance, down from 20%)
+                } else if (eventChance < 0.16) { // Reduced from 0.24
+                    // Slow down (8% chance, down from 12%)
                     this.currentEvent = "slight slowdown";
-                    this.eventMultiplier = 0.85; // Less significant slowdown (up from 0.7)
+                    this.eventMultiplier = 0.9; // Less significant slowdown (up from 0.85)
                     this.eventDuration = 800 + Math.random() * 1200;
                     console.log(`${this.name} slows slightly`);
-                } else if (eventChance < 0.36) {
-                    // Subtle momentum shift (12% chance, down from 20%)
+                } else if (eventChance < 0.24) { // Reduced from 0.36
+                    // Subtle momentum shift (8% chance, down from 12%)
                     if (Math.random() < 0.5) {
-                        this.momentum += 0.15 + Math.random() * 0.1; // Reduced momentum shift
+                        this.momentum += 0.1 + Math.random() * 0.05; // Reduced momentum shift
                         console.log(`${this.name} makes a move!`);
                     } else {
-                        this.momentum -= 0.1 + Math.random() * 0.15; // Reduced negative momentum
+                        this.momentum -= 0.05 + Math.random() * 0.1; // Reduced negative momentum
                         console.log(`${this.name} loses a bit of momentum`);
                     }
                     // No event duration, just a momentum change
-                    this.nextEventTime = time - this.scene.raceStartTime + 5000 + Math.random() * 7000;
-                } else if (eventChance < 0.42) {
-                    // Comeback effort (6% chance, down from 10%)
+                    this.nextEventTime = time - this.scene.raceStartTime + 8000 + Math.random() * 10000; // Increased time between events
+                } else if (eventChance < 0.28) { // Reduced from 0.42
+                    // Comeback effort (4% chance, down from 6%)
                     if (this.catchUpFactor > 0.2) { // Only if already behind
                         this.currentEvent = "comeback effort";
-                        this.eventMultiplier = 1.35; // Reduced from 1.7
+                        this.eventMultiplier = 1.2; // Reduced from 1.35
                         this.eventDuration = 1000 + Math.random() * 1000;
                         console.log(`${this.name} is making a comeback effort!`);
                     } else {
                         // Fallback to standard event
-                        this.nextEventTime = time - this.scene.raceStartTime + 4000 + Math.random() * 6000;
+                        this.nextEventTime = time - this.scene.raceStartTime + 8000 + Math.random() * 10000; // Increased time between events
                     }
-                } else if (eventChance < 0.48) {
-                    // Brief fatigue (6% chance, down from 10%)
-                    this.currentEvent = "brief fatigue";
-                    this.eventMultiplier = 0.8; // Less significant slowdown (up from 0.6)
-                    this.eventDuration = 1000 + Math.random() * 1000;
-                    console.log(`${this.name} shows signs of fatigue`);
                 } else {
-                    // No event (52% chance, up from 20%)
-                    this.nextEventTime = time - this.scene.raceStartTime + 4000 + Math.random() * 6000;
+                    // No event this time (72% chance, up from 58%)
+                    this.nextEventTime = time - this.scene.raceStartTime + 8000 + Math.random() * 10000; // Increased time between events
                 }
             }
         }
@@ -383,24 +406,24 @@ class Horse {
             const distanceBehind = leader.distance - this.distance;
             const percentBehind = distanceBehind / this.scene.trackLength;
             
-            // More moderate position-based component (0.03 to 0.25 based on position)
-            const positionFactor = Math.min(0.25, 0.03 * position);
+            // Even more moderate position-based component (0.02 to 0.15 based on position)
+            const positionFactor = Math.min(0.15, 0.02 * position);
             
-            // More moderate distance-based component (up to 0.25 more for being far behind)
-            const distanceFactor = Math.min(0.25, percentBehind * 1.5);
+            // More moderate distance-based component (up to 0.15 more for being far behind)
+            const distanceFactor = Math.min(0.15, percentBehind * 1.0);
             
             // Combined catch-up factor with smaller random variation
-            const randomBoost = Math.random() * 0.1; 
+            const randomBoost = Math.random() * 0.05; // Reduced from 0.1
             this.catchUpFactor = positionFactor + distanceFactor + randomBoost;
             
             // Add smaller boost for last place horse
             if (position === sortedHorses.length - 1) {
-                this.catchUpFactor += 0.15; 
+                this.catchUpFactor += 0.1; // Reduced from 0.15
             }
             
             // Less frequent random chance for recovery
-            if (Math.random() < 0.02 && position > sortedHorses.length / 2) {
-                this.momentum += 0.2; 
+            if (Math.random() < 0.01 && position > sortedHorses.length / 2) { // Reduced from 0.02
+                this.momentum += 0.15; // Reduced from 0.2
                 console.log(`${this.name} makes a move to catch up!`);
             }
         } else {
@@ -409,12 +432,12 @@ class Horse {
             const leadDistance = this.distance - secondPlace.distance;
             const percentAhead = leadDistance / this.scene.trackLength;
             
-            // Leader handicap increases with lead percentage (reduced to max 0.3 from 0.6)
-            this.leadHandicap = Math.min(0.3, percentAhead * 2.0);
+            // Leader handicap increases with lead percentage (reduced to max 0.2 from 0.3)
+            this.leadHandicap = Math.min(0.2, percentAhead * 1.5); // Reduced from 2.0
             
             // Less frequent random chance for leader to slow slightly
-            if (Math.random() < 0.05 && percentAhead > 0.03) {
-                this.momentum -= 0.1; 
+            if (Math.random() < 0.03 && percentAhead > 0.04) { // Reduced from 0.05, threshold increased
+                this.momentum -= 0.08; // Reduced from 0.1
                 console.log(`${this.name} eases the pace slightly!`);
             }
             
@@ -423,7 +446,7 @@ class Horse {
     }
     
     applyFinalLapBalancing() {
-        // Final lap balancing - much more moderate to keep pack together
+        // Final lap balancing - even more moderate to keep pack together but maintain race integrity
         console.log(`${this.name} entering final lap balancing`);
         
         // Get all active horses
@@ -444,24 +467,55 @@ class Horse {
             const leadDistance = this.distance - secondPlace.distance;
             
             // More moderate handicap for leader
-            if (leadDistance > this.scene.trackLength * 0.05) {
+            if (leadDistance > this.scene.trackLength * 0.06) { // Increased threshold from 0.05
                 // If lead is significant, apply gentle handicap
-                this.momentum -= 0.1;
+                this.momentum -= 0.08; // Reduced from 0.1
                 console.log(`${this.name} feels the pressure of the final lap`);
             }
         } else {
             // Trailing horses get modest boost based on position
             // The further back, the more boost, but still moderate
-            const boostFactor = Math.min(0.1 + (position / totalHorses) * 0.15, 0.25);
+            const boostFactor = Math.min(0.08 + (position / totalHorses) * 0.12, 0.2); // Reduced from 0.1 + 0.15 * position/total, max 0.25
             this.momentum += boostFactor;
-            
-            // Last place gets slightly more help but not dramatic
-            if (position === totalHorses - 1) {
-                this.momentum += 0.1;
-            }
             
             console.log(`${this.name} gets motivated for the final lap (boost: ${boostFactor.toFixed(2)})`);
         }
+    }
+    
+    // Method to randomize horse skills
+    randomizeSkills() {
+        // Generate random skill distribution - each horse will excel in different areas
+        const totalSkillPoints = 3.75; // Total skill points to distribute
+        const skillVariance = 0.3; // How much variance to allow in total skill points
+        
+        // Randomize total skill points slightly to create some overall better/worse horses
+        const adjustedSkillPoints = totalSkillPoints + (Math.random() * skillVariance * 2) - skillVariance;
+        
+        // Distribute skill points with some randomness
+        const speedWeight = Math.random() * 0.6 + 0.7; // 0.7-1.3 (speed is important for all horses)
+        const staminaWeight = Math.random() * 0.8 + 0.6; // 0.6-1.4
+        const accelerationWeight = Math.random() * 0.8 + 0.6; // 0.6-1.4
+        
+        // Normalize weights so they sum to 1.0
+        const totalWeight = speedWeight + staminaWeight + accelerationWeight;
+        const normalizedSpeedWeight = speedWeight / totalWeight;
+        const normalizedStaminaWeight = staminaWeight / totalWeight;
+        const normalizedAccelerationWeight = accelerationWeight / totalWeight;
+        
+        // Calculate base stats based on weights
+        this.baseSpeed = (normalizedSpeedWeight * adjustedSkillPoints * 2.5) + 1.0; // Range ~1.5-3.5
+        this.stamina = (normalizedStaminaWeight * adjustedSkillPoints * 0.8) + 0.4; // Range ~0.6-1.2
+        this.acceleration = (normalizedAccelerationWeight * adjustedSkillPoints * 0.4) + 0.2; // Range ~0.3-0.6
+        
+        // Create descriptive traits based on stats
+        this.traits = [];
+        if (this.baseSpeed > 2.8) this.traits.push("Fast");
+        if (this.stamina > 1.0) this.traits.push("Endurance");
+        if (this.acceleration > 0.5) this.traits.push("Quick Starter");
+        if (this.traits.length === 0) this.traits.push("Balanced");
+        
+        // Moderate luck factor - still allows for some randomness
+        this.luckFactor = Math.random() * 0.2 + 0.05; // Between 0.05 and 0.25 (reduced)
     }
     
     reset() {
@@ -473,6 +527,9 @@ class Horse {
         this.position = null;
         this.catchUpFactor = 0;
         this.leadHandicap = 0; 
+        
+        // Randomize horse skills
+        this.randomizeSkills();
         
         // Use a middle lane as the reference path for all horses
         const referenceIndex = Math.floor(this.scene.numHorses / 2) - 1; 
@@ -501,6 +558,13 @@ class Horse {
             const verticalVariation = -40 - (this.lane * 5); 
             this.nameText.x = offsetX - nameOffsetX + horizontalVariation;
             this.nameText.y = startPosition.y - nameOffsetY + verticalVariation;
+        }
+        
+        // Update the lane text with new traits
+        if (this.laneText) {
+            // Format horse traits as a string
+            const traitsText = this.traits.join(", ");
+            this.laneText.setText(`#${this.lane + 1}: ${this.name} (${traitsText})`);
         }
         
         this.legMovement = 0;
