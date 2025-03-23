@@ -56,6 +56,7 @@ class Horse {
         // Sprite configuration
         this.sprite = null;
         this.nameText = null;
+        this.connectingLine = null;
         
         // Use a middle lane as the reference path for all horses
         const referenceIndex = Math.floor(this.scene.numHorses / 2) - 1; 
@@ -120,16 +121,22 @@ class Horse {
         
         // Lane number - position relative to track dimensions
         const laneTextY = this.scene.trackCenterY - (this.scene.trackHeight * 0.4) + (this.lane * (this.scene.trackHeight * 0.06));
-        this.laneText = this.scene.add.text(20, laneTextY, `Lane ${this.lane + 1}: ${this.name}`, { 
+        this.laneText = this.scene.add.text(20, laneTextY, `#${this.lane + 1}: ${this.name}`, { 
             fontSize: '16px', 
             fontFamily: 'Arial',
             color: '#000'
         });
         
+        // Add varying offsets based on lane number to prevent stacking
+        // Position labels further away from horses to make room for connecting lines
+        const horizontalVariation = (this.lane % 2 === 0) ? -40 - (this.lane * 3) : 40 + (this.lane * 3);
+        // Increase vertical offset to hover labels higher above horses
+        const verticalVariation = -40 - (this.lane * 5); // Negative values move upward
+        
         // Horse name follows the horse - adjust text position based on horse size
         const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
         const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
-        this.nameText = this.scene.add.text(offsetX - nameOffsetX, startPosition.y - nameOffsetY, this.name, { 
+        this.nameText = this.scene.add.text(offsetX - nameOffsetX + horizontalVariation, startPosition.y - nameOffsetY + verticalVariation, this.name, { 
             fontSize: '14px', 
             fontFamily: 'Arial',
             color: '#000',
@@ -137,8 +144,11 @@ class Horse {
             padding: { x: 2, y: 1 }
         });
         
+        // Create connecting line
+        this.connectingLine = this.scene.add.graphics();
+        
         // Group all elements
-        this.group = this.scene.add.group([this.sprite, this.laneText, this.nameText]);
+        this.group = this.scene.add.group([this.sprite, this.laneText, this.nameText, this.connectingLine]);
     }
     
     update(time, delta) {
@@ -239,9 +249,14 @@ class Horse {
         if (this.nameText) {
             const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
             const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
-            this.nameText.x = this.sprite.x - nameOffsetX;
-            this.nameText.y = this.sprite.y - nameOffsetY;
+            const horizontalVariation = (this.lane % 2 === 0) ? -40 - (this.lane * 3) : 40 + (this.lane * 3);
+            const verticalVariation = -40 - (this.lane * 5); 
+            this.nameText.x = this.sprite.x - nameOffsetX + horizontalVariation;
+            this.nameText.y = this.sprite.y - nameOffsetY + verticalVariation;
         }
+        
+        // Update connecting line
+        this.updateConnectingLine();
         
         // Add a slight bobbing motion for running effect
         this.legMovement = (this.legMovement || 0) + delta * 0.01;
@@ -253,6 +268,31 @@ class Horse {
         if (!this.finished && this.distance >= totalDistance && lapDistance >= 0 && lapDistance <= 50) {
             this.finishRace(time);
         }
+    }
+    
+    updateConnectingLine() {
+        if (!this.connectingLine || !this.sprite || !this.nameText) return;
+        
+        // Clear previous line
+        this.connectingLine.clear();
+        
+        // Set line style - make it thinner and more transparent for better visibility
+        this.connectingLine.lineStyle(0.8, this.color, 0.6);
+        
+        // Calculate start point (bottom center of name text)
+        const startX = this.nameText.x + this.nameText.width / 2;
+        const startY = this.nameText.y + this.nameText.height;
+        
+        // Calculate end point (top center of horse sprite)
+        const endX = this.sprite.x;
+        const endY = this.sprite.y - (this.sprite.height * this.sprite.scale * 0.3);
+        
+        // Draw the line
+        this.connectingLine.beginPath();
+        this.connectingLine.moveTo(startX, startY);
+        this.connectingLine.lineTo(endX, endY);
+        this.connectingLine.closePath();
+        this.connectingLine.strokePath();
     }
     
     handleRaceEvents(time, delta) {
@@ -457,8 +497,10 @@ class Horse {
         const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
         const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
         if (this.nameText) {
-            this.nameText.x = offsetX - nameOffsetX;
-            this.nameText.y = startPosition.y - nameOffsetY;
+            const horizontalVariation = (this.lane % 2 === 0) ? -40 - (this.lane * 3) : 40 + (this.lane * 3);
+            const verticalVariation = -40 - (this.lane * 5); 
+            this.nameText.x = offsetX - nameOffsetX + horizontalVariation;
+            this.nameText.y = startPosition.y - nameOffsetY + verticalVariation;
         }
         
         this.legMovement = 0;
