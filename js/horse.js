@@ -89,11 +89,18 @@ class Horse {
     }
     
     createSprite() {
+        // Calculate a small horizontal offset based on lane number to fan out horses at the start
+        // This will position them slightly to the right
+        const horizontalOffset = this.lane * 20; // Adjust this value to control the spread
+        
         // Get starting position
         const startPosition = this.scene.getPositionOnTrack(0, this.laneOffset);
         
+        // Apply the horizontal offset to fan out horses to the right
+        const offsetX = startPosition.x + horizontalOffset;
+        
         // Create horse sprite using the silhouette image
-        this.sprite = this.scene.add.image(startPosition.x, startPosition.y, 'horse');
+        this.sprite = this.scene.add.image(offsetX, startPosition.y, 'horse');
         
         // Scale the sprite to an even smaller size
         const scaleBase = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 8000;
@@ -122,7 +129,7 @@ class Horse {
         // Horse name follows the horse - adjust text position based on horse size
         const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
         const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
-        this.nameText = this.scene.add.text(startPosition.x - nameOffsetX, startPosition.y - nameOffsetY, this.name, { 
+        this.nameText = this.scene.add.text(offsetX - nameOffsetX, startPosition.y - nameOffsetY, this.name, { 
             fontSize: '14px', 
             fontFamily: 'Arial',
             color: '#000',
@@ -437,15 +444,22 @@ class Horse {
         
         // Reset position back to starting position
         const startPosition = this.scene.getPositionOnTrack(0, this.laneOffset);
-        this.sprite.x = startPosition.x;
+        
+        // Apply the same horizontal offset as in createSprite to maintain fan-out effect
+        const horizontalOffset = this.lane * 20; // Keep this value consistent with createSprite
+        const offsetX = startPosition.x + horizontalOffset;
+        
+        this.sprite.x = offsetX;
         this.sprite.y = startPosition.y;
         this.sprite.rotation = startPosition.rotation + Math.PI/2;
         
         // Update name text position
         const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
         const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
-        this.nameText.x = startPosition.x - nameOffsetX;
-        this.nameText.y = startPosition.y - nameOffsetY;
+        if (this.nameText) {
+            this.nameText.x = offsetX - nameOffsetX;
+            this.nameText.y = startPosition.y - nameOffsetY;
+        }
         
         this.legMovement = 0;
     }
