@@ -260,6 +260,9 @@ class RaceScene extends Phaser.Scene {
             raceTimeElement.textContent = '0.00s';
         }
         
+        const resultsPanel = document.querySelector('.results-panel');
+        resultsPanel.style.display = 'none';
+        
         const countdownInterval = setInterval(() => {
             count--;
             if (count > 0) {
@@ -272,6 +275,7 @@ class RaceScene extends Phaser.Scene {
                 setTimeout(() => {
                     this.countdownText.setAlpha(0);
                     this.beginRace();
+                    resultsPanel.style.display = 'block'; // Show results panel after race
                 }, 1000);
             }
         }, 1000);
