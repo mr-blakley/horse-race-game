@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const startRaceButton = document.getElementById('start-race');
     const resetRaceButton = document.getElementById('reset-race');
     
+    // Hide results panel initially
+    const resultsPanel = document.querySelector('.results-panel');
+    resultsPanel.style.display = 'none';
+
     // Function to access the race scene once it's created
     // The 'create' event doesn't exist on game.events in Phaser 3
     // We'll use a slight delay to ensure the scene is ready

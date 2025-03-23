@@ -17,33 +17,173 @@ body {
     position: relative;
 }
 
-header {
-    text-align: center;
-    color: #1a5276;
+#game-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #55aa55;
+    z-index: 1;
+}
+
+/* Ensure Phaser canvas appears correctly */
+canvas {
+    display: block;
+}
+
+/* Top banner styling */
+.top-banner {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
+    background-color: rgba(255, 255, 255, 0.6);
+    padding: 3px 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 10;
-    padding: 10px;
-    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: auto;
+    max-height: 50px;
 }
 
-#game-container {
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    background-color: #fff;
+.side-panel {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.85);
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.horse-panel {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "header list controls";
+    gap: 15px;
+    width: 100%;
+}
+
+.horse-panel .panel-header {
+    grid-area: header;
+    border-bottom: none;
+    border-right: 1px solid #ddd;
+    padding-right: 15px;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+.horse-panel .panel-header h2 {
+    margin: 0;
+    font-size: 14px;
+}
+
+.horse-panel .scrollable-content {
+    grid-area: list;
+    margin-bottom: 0;
+    overflow-x: auto;
+    max-height: none;
+    white-space: nowrap;
+}
+
+.horse-panel .race-controls {
+    grid-area: controls;
+    border-top: none;
+    border-left: 1px solid #ddd;
+    padding-top: 0;
+    padding-left: 15px;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+}
+
+.results-panel {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    max-width: 500px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    border: 2px solid #1a5276;
+    z-index: 100;
+}
+
+.panel-header {
+    border-bottom: 2px solid #1a5276;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.panel-header h2 {
+    color: #1a5276;
+    font-size: 16px;
+    text-align: center;
+    margin: 0;
+}
+
+.scrollable-content {
+    overflow-y: auto;
+    max-height: 300px;
+    padding-right: 5px;
+}
+
+#horse-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 15px;
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+    overflow-y: hidden; /* Hide vertical scrollbar */
+}
+
+.horse-item {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    position: relative;
+    white-space: nowrap;
+    min-width: max-content;
+}
+
+.horse-item:hover {
+    background-color: rgba(240, 240, 240, 0.8);
+}
+
+.horse-color {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    display: inline-block;
+}
+
+.horse-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.85em;
 }
 
 .race-controls {
     display: flex;
     justify-content: space-evenly;
-    margin-top: 15px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
+    align-items: center;
+    gap: 10px;
 }
 
 .race-button {
@@ -51,11 +191,11 @@ header {
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 0.9em;
+    padding: 6px 12px;
+    font-size: 0.85em;
     cursor: pointer;
     transition: background-color 0.2s;
-    margin: 0 5px;
+    white-space: nowrap;
 }
 
 .race-button:hover {
@@ -71,112 +211,6 @@ header {
     cursor: not-allowed;
 }
 
-.horse-lineup-container {
-    position: absolute;
-    top: 60px;
-    left: 0;
-    right: 0;
-    width: 100%;
-    text-align: center;
-    z-index: 20;
-    pointer-events: none;
-}
-
-.horse-lineup {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 300px;
-    max-height: 70vh;
-    overflow-y: auto;
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    z-index: 20;
-}
-
-.horse-lineup h2 {
-    text-align: center;
-    margin-top: 0;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #ddd;
-    font-size: 1.2em;
-}
-
-.race-results-container {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 280px;
-    max-height: 60vh;
-    overflow-y: auto;
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    z-index: 20;
-}
-
-.race-results h2 {
-    text-align: center;
-    margin-top: 0;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #ddd;
-    font-size: 1.2em;
-}
-
-#results-panel {
-    font-size: 0.9em;
-}
-
-.horse-lineup h2, .race-results h2 {
-    color: #1a5276;
-    margin-bottom: 5px;
-    font-size: 16px;
-    text-align: center;
-}
-
-#horse-list {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-}
-
-.horse-item {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    margin: 5px 0;
-    padding: 5px;
-    border-radius: 4px;
-    transition: background-color 0.2s;
-    position: relative;
-}
-
-.horse-item:hover {
-    background-color: rgba(240, 240, 240, 0.8);
-}
-
-.horse-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
-    display: inline-block;
-}
-
-.horse-name {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 0.9em;
-}
-
 .race-info {
     position: absolute;
     bottom: 10px;
@@ -187,41 +221,98 @@ header {
     font-size: 0.9em;
     font-weight: bold;
     z-index: 10;
+    display: flex;
+    gap: 15px;
 }
 
-.result-item {
-    padding: 8px;
-    margin-bottom: 8px;
-    border-radius: 4px;
-    background-color: rgba(248, 249, 250, 0.8);
-}
-
-.result-position {
-    font-weight: 700;
+.race-status-header {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
     color: #1a5276;
 }
 
-.result-highlight {
-    background-color: rgba(234, 242, 248, 0.8);
-    border-left: 4px solid #2e86c1;
+/* Top positions indicators */
+.position-1st, .position-2nd, .position-3rd {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
-footer {
-    display: none; /* Hide footer to maximize game area */
+.position-1st::before {
+    content: "🥇";
+    margin-right: 5px;
+}
+
+.position-2nd::before {
+    content: "🥈";
+    margin-right: 5px;
+}
+
+.position-3rd::before {
+    content: "🥉";
+    margin-right: 5px;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.result-highlight {
+    background-color: #ffd700;
+    font-weight: bold;
+}
+
+.result-position {
+    font-size: 1.1em;
+    color: #333;
+}
+
+.result-time {
+    font-size: 1.1em;
+    color: #555;
 }
 
 /* Media query for smaller screens */
 @media (max-width: 768px) {
-    .horse-lineup {
-        width: 250px;
-        max-height: 60vh;
-        font-size: 0.9em;
+    .horse-panel {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "header"
+            "list"
+            "controls";
+        gap: 10px;
     }
     
-    .race-results-container {
-        width: 230px;
-        top: 10px;
-        right: 10px;
+    .horse-panel .panel-header {
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+        padding-right: 0;
+        padding-bottom: 10px;
+        justify-content: center;
+    }
+    
+    .horse-panel .race-controls {
+        border-left: none;
+        border-top: 1px solid #ddd;
+        padding-left: 0;
+        padding-top: 10px;
+        justify-content: center;
+    }
+    
+    .side-panel {
+        max-height: 70vh;
+    }
+    
+    .results-panel {
+        width: 200px;
     }
     
     .race-info {
@@ -231,12 +322,16 @@ footer {
 }
 
 @media (max-width: 480px) {
-    .horse-lineup {
-        width: 220px;
-        max-height: 50vh;
+    .side-panel {
+        max-height: 60vh;
     }
     
-    .race-results-container {
+    .results-panel {
         width: 200px;
+    }
+    
+    .race-button {
+        padding: 6px 12px;
+        font-size: 0.8em;
     }
 }
