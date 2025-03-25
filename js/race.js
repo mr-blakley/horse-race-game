@@ -43,10 +43,24 @@ class RaceScene extends Phaser.Scene {
         this.trackBackground.displayHeight = this.scale.height;
         
         // Add finish line
-        this.finishLine = this.add.image(this.trackCenterX + (this.trackWidth * 0.35), this.trackCenterY - (this.trackHeight * 0.15), 'finishLine').setOrigin(0.5, 1);
-        this.finishLine.displayWidth = 10;
-        this.finishLine.displayHeight = this.trackHeight * 0.3;
-        this.finishLine.rotation = Math.PI / 2; // Rotate to be vertical
+        this.finishLine = this.add.graphics();
+        this.finishLine.lineStyle(2, 0xffffff, 1);
+        
+        // Create a checkered pattern for the finish line
+        const finishX = this.trackCenterX + (this.trackWidth * 0.35);
+        const finishTopY = this.trackCenterY - (this.trackHeight * 0.3);
+        const finishBottomY = this.trackCenterY;
+        const segmentHeight = (finishBottomY - finishTopY) / 10; // 10 segments for checkered pattern
+        
+        for (let i = 0; i < 10; i++) {
+            this.finishLine.fillStyle(i % 2 === 0 ? 0x000000 : 0xffffff, 1);
+            this.finishLine.fillRect(
+                finishX - 5, 
+                finishTopY + (i * segmentHeight), 
+                10, 
+                segmentHeight
+            );
+        }
         
         // Starting line is at the same position for oval track
         this.startLine = this.add.graphics();
@@ -104,8 +118,21 @@ class RaceScene extends Phaser.Scene {
         
         // Update finish line if it exists
         if (this.finishLine) {
-            this.finishLine.setPosition(this.trackCenterX + (this.trackWidth * 0.35), this.trackCenterY - (this.trackHeight * 0.15));
-            this.finishLine.displayHeight = this.trackHeight * 0.3;
+            this.finishLine.clear();
+            const finishX = this.trackCenterX + (this.trackWidth * 0.35);
+            const finishTopY = this.trackCenterY - (this.trackHeight * 0.3);
+            const finishBottomY = this.trackCenterY;
+            const segmentHeight = (finishBottomY - finishTopY) / 10; // 10 segments for checkered pattern
+            
+            for (let i = 0; i < 10; i++) {
+                this.finishLine.fillStyle(i % 2 === 0 ? 0x000000 : 0xffffff, 1);
+                this.finishLine.fillRect(
+                    finishX - 5, 
+                    finishTopY + (i * segmentHeight), 
+                    10, 
+                    segmentHeight
+                );
+            }
         }
         
         // Update start line if it exists
@@ -185,16 +212,51 @@ class RaceScene extends Phaser.Scene {
         // Debug log
         console.log("Initializing horse list with " + this.numHorses + " horses");
         
+        // Define specific horses for all lanes
+        const specificHorses = [
+            "Fusaichi Pegasus", // Lane 1 (index 0) - Black
+            "Aura Boost",       // Lane 2 (index 1) - White Smoke
+            "Orchid Dream",     // Lane 3 (index 2) - Orchid
+            "Seabreeze",       // Lane 4 (index 3) - Light Sea Green
+            "Rose Runner",      // Lane 5 (index 4) - American Rose
+            "Dusty Trails",     // Lane 6 (index 5) - Tan
+            "Amber Flash",      // Lane 7 (index 6) - Dark Orange
+            "Green Lightning",  // Lane 8 (index 7) - Lime Green
+            "Royal Thunder",    // Lane 9 (index 8) - Royal Blue
+            "Pink Dash",        // Lane 10 (index 9) - Hot Pink
+            "Silver Streak",    // Lane 11 (index 10) - Silver
+            "Golden Arrow"      // Lane 12 (index 11) - Dark Goldenrod
+        ];
+        
+        // Define fixed colors for each lane
+        const fixedColors = [
+            "#000000", // Black
+            "#F5F5F5", // White Smoke
+            "#DA70D6", // Orchid
+            "#20B2AA", // Light Sea Green
+            "#FF033E", // American Rose
+            "#D2B48C", // Tan
+            "#FF8C00", // Dark Orange
+            "#32CD32", // Lime Green
+            "#4169E1", // Royal Blue
+            "#FF69B4", // Hot Pink
+            "#C0C0C0", // Silver
+            "#B8860B"  // Dark Goldenrod
+        ];
+        
         // Create horses
         const horseListElement = document.getElementById('horse-list');
         if (horseListElement) {
             horseListElement.innerHTML = '';
             
             for (let i = 0; i < this.numHorses; i++) {
-                const horseName = nameGenerator.generateName();
-                const horseColor = this.getRandomHexColor();
+                // Use specific horse name for each lane
+                const horseName = (i < specificHorses.length) ? specificHorses[i] : `Horse ${i+1}`;
                 
-                // Create horse instance
+                // Get color for this lane
+                const horseColor = (i < fixedColors.length) ? fixedColors[i] : this.getRandomHexColor();
+                
+                // Create horse instance with explicit color
                 const horse = new Horse(this, i, horseName, Phaser.Display.Color.HexStringToColor(horseColor).color);
                 this.horses.push(horse);
                 
@@ -208,7 +270,7 @@ class RaceScene extends Phaser.Scene {
                 horseListElement.appendChild(horseElement);
                 
                 // Debug log
-                console.log(`Added horse ${i+1}: ${horseName}`);
+                console.log(`Added horse ${i+1}: ${horseName} with color ${horseColor}`);
             }
             
             // Clear results panel

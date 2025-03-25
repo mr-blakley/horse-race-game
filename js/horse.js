@@ -94,20 +94,21 @@ class Horse {
     
     getRandomColor() {
         const colors = [
-            0xff0000, 
-            0x00ff00, 
-            0x0000ff, 
-            0xffff00, 
-            0xff00ff, 
-            0x00ffff, 
-            0xffa500, 
-            0x800080, 
-            0x008000, 
-            0x800000, 
-            0x808000, 
-            0x008080, 
+            0x000000, // Black
+            0xF5F5F5, // White Smoke
+            0xDA70D6, // Orchid
+            0x20B2AA, // Light Sea Green
+            0xFF033E, // American Rose
+            0xD2B48C, // Tan
+            0xFF8C00, // Dark Orange
+            0x32CD32, // Lime Green
+            0x4169E1, // Royal Blue
+            0xFF69B4, // Hot Pink
+            0xC0C0C0, // Silver
+            0xB8860B  // Dark Goldenrod
         ];
         
+        // Return a random color (this is only used as a fallback)
         return colors[Math.floor(Math.random() * colors.length)];
     }
     
