@@ -28,7 +28,7 @@ class RaceScene extends Phaser.Scene {
         this.createPlaceholderAssets();
         
         // Load horse silhouette
-        this.load.image('horse', 'assets/horse-silhouette.png');
+        this.load.image('horse', 'assets/full-horse.png');
         
         console.log("Preloading horse image");
     }

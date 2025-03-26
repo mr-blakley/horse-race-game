@@ -127,7 +127,7 @@ class Horse {
         this.sprite = this.scene.add.image(offsetX, startPosition.y, 'horse');
         
         // Scale the sprite to an even smaller size
-        const scaleBase = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 8000;
+        const scaleBase = Math.min(this.scene.trackWidth, this.scene.trackHeight) / 25000;
         this.sprite.setScale(Math.max(0.015, scaleBase));
         
         // Flip the sprite horizontally so horses face left at the start of the race
@@ -146,10 +146,19 @@ class Horse {
         const laneTextY = this.scene.trackCenterY - (this.scene.trackHeight * 0.4) + (this.lane * (this.scene.trackHeight * 0.06));
         
         // Display horse name and traits in the left panel
-        this.laneText = this.scene.add.text(20, laneTextY, `#${this.lane + 1}: ${this.name}`, { 
+        // Push 1-6 a little higher to the top and 7-12 farther down on the screen
+        const laneTextYOffset = (this.lane < 6) ? -50 : 120;
+        
+        // Convert the horse color from hex number to hex string for text color
+        const colorHex = '#' + this.color.toString(16).padStart(6, '0');
+        
+        this.laneText = this.scene.add.text(20, laneTextY + laneTextYOffset, `#${this.lane + 1}: ${this.name}`, { 
             fontSize: '16px', 
             fontFamily: 'Arial',
-            color: '#000'
+            fontWeight: '900', 
+            color: colorHex,
+            stroke: '#FFFFFF', 
+            strokeThickness: 3 
         });
         
         // Add varying offsets based on lane number to prevent stacking
