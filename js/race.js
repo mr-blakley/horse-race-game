@@ -660,6 +660,8 @@ class RaceScene extends Phaser.Scene {
         // Inner field with a slightly different shade of green
         const innerFieldColor = 0x228b22; // Forest green
         trackGraphics.fillStyle(innerFieldColor);
+        
+        // Draw main track
         trackGraphics.fillEllipse(outerX, outerY, innerWidth, innerHeight);
         
         // Add texture to inner field
@@ -687,28 +689,24 @@ class RaceScene extends Phaser.Scene {
             trackGraphics.fillCircle(ellipseX, ellipseY, size);
         }
         
-        // Add lane markings (dashed white lines)
-        trackGraphics.lineStyle(2, 0xffffff, 0.6);
+        // Add subtle lane dividers with darker dirt color
+        const numLanes = 6;
+        const laneWidth = (mainTrackWidth - innerWidth) / (2 * numLanes);
         
-        // Draw dashed lane markers
-        const segments = 60;
-        const dashLength = Math.PI / 30;
-        const gapLength = Math.PI / 60;
-        
-        for (let i = 0; i < segments; i++) {
-            const startAngle = i * (dashLength + gapLength);
-            const endAngle = startAngle + dashLength;
+        for (let lane = 1; lane < numLanes; lane++) {
+            const laneRadius = (innerWidth / 2) + (laneWidth * lane);
             
-            // Draw arc for outer lane marker
-            trackGraphics.beginPath();
-            trackGraphics.arc(
-                outerX, 
-                outerY, 
-                (innerWidth + mainTrackWidth) / 4, // Middle of the track
-                startAngle, 
-                endAngle
+            // Use a slightly darker version of the track color for the lane dividers
+            const laneDividerColor = 0xc0a070; // Slightly darker than the track
+            trackGraphics.lineStyle(1, laneDividerColor, 0.4);
+            
+            // Draw the full elliptical lane divider
+            trackGraphics.strokeEllipse(
+                outerX,
+                outerY,
+                laneRadius * 2,
+                laneRadius * (mainTrackHeight / mainTrackWidth) * 2
             );
-            trackGraphics.strokePath();
         }
         
         // Generate texture
