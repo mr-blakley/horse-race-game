@@ -217,7 +217,7 @@ class RaceScene extends Phaser.Scene {
             "Fusaichi Pegasus", // Lane 1 (index 0) - Black
             "Aura Boost",       // Lane 2 (index 1) - White Smoke
             "Orchid Dream",     // Lane 3 (index 2) - Orchid
-            "Seabreeze",       // Lane 4 (index 3) - Light Sea Green
+            "Shell Beach",      // Lane 4 (index 3) - Light Sea Green
             "Rose Runner",      // Lane 5 (index 4) - American Rose
             "Dusty Trails",     // Lane 6 (index 5) - Tan
             "Amber Flash",      // Lane 7 (index 6) - Dark Orange
