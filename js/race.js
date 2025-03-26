@@ -572,29 +572,144 @@ class RaceScene extends Phaser.Scene {
         const width = this.scale.width || 800;
         const height = this.scale.height || 600;
         
-        // Draw grass background
-        trackGraphics.fillStyle(0x55aa55);
+        // Draw a more realistic grass background with texture
+        const grassBaseColor = 0x2e8b57; // Sea green
+        trackGraphics.fillStyle(grassBaseColor);
         trackGraphics.fillRect(0, 0, width, height);
         
-        // Draw oval-shaped track
-        trackGraphics.fillStyle(0xbbaa88);
+        // Add grass texture pattern
+        for (let i = 0; i < 5000; i++) {
+            const x = Math.random() * width;
+            const y = Math.random() * height;
+            const size = Math.random() * 3 + 1;
+            const shade = Math.random() * 0.2 - 0.1; // Random shade variation
+            
+            // Calculate color variation for more natural look
+            const colorVariation = shade < 0 ? 
+                Math.max(0, ((grassBaseColor & 0xFF) + Math.floor(shade * 255))) | 
+                Math.max(0, (((grassBaseColor >> 8) & 0xFF) + Math.floor(shade * 255))) << 8 | 
+                Math.max(0, (((grassBaseColor >> 16) & 0xFF) + Math.floor(shade * 255))) << 16 :
+                Math.min(255, ((grassBaseColor & 0xFF) + Math.floor(shade * 255))) | 
+                Math.min(255, (((grassBaseColor >> 8) & 0xFF) + Math.floor(shade * 255))) << 8 | 
+                Math.min(255, (((grassBaseColor >> 16) & 0xFF) + Math.floor(shade * 255))) << 16;
+            
+            trackGraphics.fillStyle(colorVariation);
+            trackGraphics.fillCircle(x, y, size);
+        }
         
-        // Draw outer ellipse
+        // Draw outer shadow for depth
+        const shadowWidth = 15;
         const outerX = this.trackCenterX;
         const outerY = this.trackCenterY;
-        const outerWidth = this.trackWidth;
-        const outerHeight = this.trackHeight;
+        const outerWidth = this.trackWidth + shadowWidth * 2;
+        const outerHeight = this.trackHeight + shadowWidth * 2;
         
-        // Draw inner ellipse (to create an oval ring) - adjusted for larger path
+        // Create shadow with gradient
+        trackGraphics.fillStyle(0x000000, 0.3);
+        trackGraphics.fillEllipse(outerX, outerY, outerWidth, outerHeight);
+        
+        // Draw oval-shaped track with a rich dirt texture
+        const trackColor = 0xd2b48c; // Tan/dirt color
+        trackGraphics.fillStyle(trackColor);
+        
+        // Draw main track
+        const mainTrackWidth = this.trackWidth;
+        const mainTrackHeight = this.trackHeight;
+        trackGraphics.fillEllipse(outerX, outerY, mainTrackWidth, mainTrackHeight);
+        
+        // Add dirt texture to the track
+        for (let i = 0; i < 8000; i++) {
+            // Generate points only within the track area (using parametric equation of ellipse)
+            const angle = Math.random() * Math.PI * 2;
+            const radiusVariation = 0.9 + Math.random() * 0.1; // Between 0.9 and 1.0
+            
+            const ellipseX = outerX + (mainTrackWidth/2) * Math.cos(angle) * radiusVariation;
+            const ellipseY = outerY + (mainTrackHeight/2) * Math.sin(angle) * radiusVariation;
+            
+            // Skip points in the inner ellipse
+            const innerRadiusX = (this.trackWidth - (this.trackWidth / 10)) / 2;
+            const innerRadiusY = (this.trackHeight - (this.trackHeight / 10)) / 2;
+            
+            const normalizedX = (ellipseX - outerX) / innerRadiusX;
+            const normalizedY = (ellipseY - outerY) / innerRadiusY;
+            
+            if (normalizedX * normalizedX + normalizedY * normalizedY < 1) {
+                continue; // Skip points inside the inner ellipse
+            }
+            
+            const size = Math.random() * 2 + 0.5;
+            const shade = Math.random() * 0.3 - 0.15; // Random shade variation
+            
+            // Calculate color variation for more natural dirt look
+            const dirtVariation = shade < 0 ? 
+                Math.max(0, ((trackColor & 0xFF) + Math.floor(shade * 255))) | 
+                Math.max(0, (((trackColor >> 8) & 0xFF) + Math.floor(shade * 255))) << 8 | 
+                Math.max(0, (((trackColor >> 16) & 0xFF) + Math.floor(shade * 255))) << 16 :
+                Math.min(255, ((trackColor & 0xFF) + Math.floor(shade * 255))) | 
+                Math.min(255, (((trackColor >> 8) & 0xFF) + Math.floor(shade * 255))) << 8 | 
+                Math.min(255, (((trackColor >> 16) & 0xFF) + Math.floor(shade * 255))) << 16;
+            
+            trackGraphics.fillStyle(dirtVariation, Math.random() * 0.7 + 0.3);
+            trackGraphics.fillCircle(ellipseX, ellipseY, size);
+        }
+        
+        // Draw inner ellipse (to create an oval ring) with a slightly darker green for contrast
         const innerWidth = this.trackWidth - (this.trackWidth / 10);
         const innerHeight = this.trackHeight - (this.trackHeight / 10);
         
-        // Fill the outer ellipse
-        trackGraphics.fillEllipse(outerX, outerY, outerWidth, outerHeight);
-        
-        // Cut out the inner ellipse by setting composite operation
-        trackGraphics.fillStyle(0x55aa55);
+        // Inner field with a slightly different shade of green
+        const innerFieldColor = 0x228b22; // Forest green
+        trackGraphics.fillStyle(innerFieldColor);
         trackGraphics.fillEllipse(outerX, outerY, innerWidth, innerHeight);
+        
+        // Add texture to inner field
+        for (let i = 0; i < 3000; i++) {
+            // Generate points only within the inner field
+            const angle = Math.random() * Math.PI * 2;
+            const radiusVariation = Math.random() * 0.9; // Between 0 and 0.9
+            
+            const ellipseX = outerX + (innerWidth/2) * Math.cos(angle) * radiusVariation;
+            const ellipseY = outerY + (innerHeight/2) * Math.sin(angle) * radiusVariation;
+            
+            const size = Math.random() * 2 + 0.5;
+            const shade = Math.random() * 0.2 - 0.1; // Random shade variation
+            
+            // Calculate color variation for inner field
+            const innerVariation = shade < 0 ? 
+                Math.max(0, ((innerFieldColor & 0xFF) + Math.floor(shade * 255))) | 
+                Math.max(0, (((innerFieldColor >> 8) & 0xFF) + Math.floor(shade * 255))) << 8 | 
+                Math.max(0, (((innerFieldColor >> 16) & 0xFF) + Math.floor(shade * 255))) << 16 :
+                Math.min(255, ((innerFieldColor & 0xFF) + Math.floor(shade * 255))) | 
+                Math.min(255, (((innerFieldColor >> 8) & 0xFF) + Math.floor(shade * 255))) << 8 | 
+                Math.min(255, (((innerFieldColor >> 16) & 0xFF) + Math.floor(shade * 255))) << 16;
+            
+            trackGraphics.fillStyle(innerVariation);
+            trackGraphics.fillCircle(ellipseX, ellipseY, size);
+        }
+        
+        // Add lane markings (dashed white lines)
+        trackGraphics.lineStyle(2, 0xffffff, 0.6);
+        
+        // Draw dashed lane markers
+        const segments = 60;
+        const dashLength = Math.PI / 30;
+        const gapLength = Math.PI / 60;
+        
+        for (let i = 0; i < segments; i++) {
+            const startAngle = i * (dashLength + gapLength);
+            const endAngle = startAngle + dashLength;
+            
+            // Draw arc for outer lane marker
+            trackGraphics.beginPath();
+            trackGraphics.arc(
+                outerX, 
+                outerY, 
+                (innerWidth + mainTrackWidth) / 4, // Middle of the track
+                startAngle, 
+                endAngle
+            );
+            trackGraphics.strokePath();
+        }
         
         // Generate texture
         trackGraphics.generateTexture('track', width, height);
