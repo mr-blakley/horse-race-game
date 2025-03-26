@@ -7,7 +7,7 @@ class Horse {
         this.scene = scene;
         this.lane = lane;
         this.name = name || nameGenerator.generateName();
-        this.color = color || this.getRandomColor();
+        this.color = color !== undefined ? color : this.getRandomColor();
         
         // Different horses have different skills - some are fast, some have stamina, some accelerate quickly
         // This creates more varied and strategic racing
