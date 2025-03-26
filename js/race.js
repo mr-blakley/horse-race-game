@@ -44,33 +44,29 @@ class RaceScene extends Phaser.Scene {
         
         // Add finish line
         this.finishLine = this.add.graphics();
-        this.finishLine.lineStyle(2, 0xffffff, 1);
         
-        // Create a checkered pattern for the finish line
-        const finishX = this.trackCenterX + (this.trackWidth * 0.35);
-        const finishTopY = this.trackCenterY - (this.trackHeight * 0.3);
-        const finishBottomY = this.trackCenterY;
-        const segmentHeight = (finishBottomY - finishTopY) / 10; // 10 segments for checkered pattern
+        // Create a solid white finish line at 195 degree angle
+        const finishX = this.trackCenterX + (this.trackWidth * 0.52); // Positioned further right
+        const finishY = this.trackCenterY - (this.trackHeight * -0.04); // Slightly below center
+        const finishLineLength = this.trackHeight * 0.3; // Length of the finish line
+        const lineThickness = 10; // Thickness of the line
         
-        for (let i = 0; i < 10; i++) {
-            this.finishLine.fillStyle(i % 2 === 0 ? 0x000000 : 0xffffff, 1);
-            this.finishLine.fillRect(
-                finishX - 5, 
-                finishTopY + (i * segmentHeight), 
-                10, 
-                segmentHeight
-            );
-        }
+        // Save the current transformation
+        this.finishLine.save();
         
-        // Starting line is at the same position for oval track
-        this.startLine = this.add.graphics();
-        this.startLine.lineStyle(2, 0xffffff, 1);
-        this.startLine.lineBetween(
-            this.trackCenterX + (this.trackWidth * 0.35), 
-            this.trackCenterY - (this.trackHeight * 0.3), 
-            this.trackCenterX + (this.trackWidth * 0.35), 
-            this.trackCenterY
-        );
+        // Translate to the position where we want the finish line
+        this.finishLine.translateCanvas(finishX, finishY);
+        
+        // Rotate by 195 degrees (converted to radians)
+        const angleInRadians = 195 * (Math.PI / 180);
+        this.finishLine.rotateCanvas(angleInRadians);
+        
+        // Draw a solid white line
+        this.finishLine.fillStyle(0xffffff, 1);
+        this.finishLine.fillRect(0, -lineThickness / 2, finishLineLength, lineThickness);
+        
+        // Restore the original transformation
+        this.finishLine.restore();
         
         // Add lane dividers (now circles)
         this.createLaneDividers();
@@ -119,32 +115,29 @@ class RaceScene extends Phaser.Scene {
         // Update finish line if it exists
         if (this.finishLine) {
             this.finishLine.clear();
-            const finishX = this.trackCenterX + (this.trackWidth * 0.35);
-            const finishTopY = this.trackCenterY - (this.trackHeight * 0.3);
-            const finishBottomY = this.trackCenterY;
-            const segmentHeight = (finishBottomY - finishTopY) / 10; // 10 segments for checkered pattern
             
-            for (let i = 0; i < 10; i++) {
-                this.finishLine.fillStyle(i % 2 === 0 ? 0x000000 : 0xffffff, 1);
-                this.finishLine.fillRect(
-                    finishX - 5, 
-                    finishTopY + (i * segmentHeight), 
-                    10, 
-                    segmentHeight
-                );
-            }
-        }
-        
-        // Update start line if it exists
-        if (this.startLine) {
-            this.startLine.clear();
-            this.startLine.lineStyle(2, 0xffffff, 1);
-            this.startLine.lineBetween(
-                this.trackCenterX + (this.trackWidth * 0.35), 
-                this.trackCenterY - (this.trackHeight * 0.3), 
-                this.trackCenterX + (this.trackWidth * 0.35), 
-                this.trackCenterY
-            );
+            // Create a solid white finish line at 195 degree angle
+            const finishX = this.trackCenterX + (this.trackWidth * 0.52); // Positioned further right
+            const finishY = this.trackCenterY - (this.trackHeight * -0.04); // Slightly below center
+            const finishLineLength = this.trackHeight * 0.3; // Length of the finish line
+            const lineThickness = 10; // Thickness of the line
+            
+            // Save the current transformation
+            this.finishLine.save();
+            
+            // Translate to the position where we want the finish line
+            this.finishLine.translateCanvas(finishX, finishY);
+            
+            // Rotate by 195 degrees (converted to radians)
+            const angleInRadians = 195 * (Math.PI / 180);
+            this.finishLine.rotateCanvas(angleInRadians);
+            
+            // Draw a solid white line
+            this.finishLine.fillStyle(0xffffff, 1);
+            this.finishLine.fillRect(0, -lineThickness / 2, finishLineLength, lineThickness);
+            
+            // Restore the original transformation
+            this.finishLine.restore();
         }
         
         // Update lane dividers
