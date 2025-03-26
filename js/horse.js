@@ -152,12 +152,13 @@ class Horse {
         // Convert the horse color from hex number to hex string for text color
         const colorHex = '#' + this.color.toString(16).padStart(6, '0');
         
+        const strokeColor = (this.lane === 0) ? '#FFFFFF' : '#000000';
         this.laneText = this.scene.add.text(20, laneTextY + laneTextYOffset, `#${this.lane + 1}: ${this.name}`, { 
-            fontSize: '16px', 
+            fontSize: '18px', 
             fontFamily: 'Arial',
             fontWeight: '900', 
             color: colorHex,
-            stroke: '#FFFFFF', 
+            stroke: strokeColor, 
             strokeThickness: 3 
         });
         
