@@ -154,8 +154,8 @@ class Horse {
         
         const strokeColor = (this.lane === 0) ? '#FFFFFF' : '#000000';
         this.laneText = this.scene.add.text(20, laneTextY + laneTextYOffset, `#${this.lane + 1}: ${this.name}`, { 
-            fontSize: '18px', 
-            fontFamily: 'Arial',
+            fontSize: '22px', 
+            fontFamily: 'Georgia',
             fontWeight: '900', 
             color: colorHex,
             stroke: strokeColor, 
@@ -172,7 +172,7 @@ class Horse {
         const nameOffsetX = this.sprite.width * this.sprite.scale * 0.5;
         const nameOffsetY = this.sprite.height * this.sprite.scale * 0.5;
         this.nameText = this.scene.add.text(offsetX - nameOffsetX + horizontalVariation, startPosition.y - nameOffsetY + verticalVariation, this.name, { 
-            fontSize: '14px', 
+            fontSize: '18px', 
             fontFamily: 'Arial',
             color: '#000',
             backgroundColor: 'rgba(255, 255, 255, 0.7)',
@@ -314,7 +314,7 @@ class Horse {
         this.updateConnectingLine();
         
         // Add a slight bobbing motion for running effect
-        this.legMovement = (this.legMovement || 0) + delta * 0.01;
+        this.legMovement = (this.legMovement || 0) + delta * 0.02;
         const bobHeight = Math.sin(this.legMovement) * 1; 
         this.sprite.y += bobHeight;
         
