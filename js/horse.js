@@ -271,16 +271,34 @@ class Horse {
         this.sprite.x = trackPos.x;
         this.sprite.y = trackPos.y;
         
-        // Determine if the horse is moving left or right based on rotation
-        // When moving left (rotation between PI/2 and 3*PI/2), flip the sprite
-        const isMovingLeft = trackPos.rotation > Math.PI/2 && trackPos.rotation < 3*Math.PI/2;
+        // Determine if the horse is on the left half of the track (between 25% and 75% of track length)
+        // This checks if the horse is roughly on the left side of the oval
+        const normalizedDistance = lapDistance / this.scene.trackLength;
+        const isOnLeftHalf = normalizedDistance > 0.5 && normalizedDistance < 0.95;
         
-        // Set scale to flip horizontally when moving left
+        // Set scale to flip horizontally when on left half
         const currentScale = Math.abs(this.sprite.scaleX);
-        this.sprite.scaleX = -currentScale;
+        this.sprite.scaleX = isOnLeftHalf ? currentScale : -currentScale;
         
-        // Set rotation based on track position
-        this.sprite.rotation = trackPos.rotation + Math.PI/2;
+        // Set rotation based on track position and track section
+        // For the right half of track (normalized distance < 0.5 or > 0.95), use normal rotation
+        // For the left half (0.5 to 0.95), keep a more consistent rotation
+        let finalRotation;
+        
+        if (isOnLeftHalf) {
+            // When on left half, use a fixed rotation angle with small adjustments
+            // This prevents horses from appearing upside down
+            const baseLeftRotation = -Math.PI/2; // Base rotation for left side
+            // Apply a small adjustment based on position to create smoother transitions
+            const leftPositionFactor = (normalizedDistance - 0.6) / 0.45; // 0 to 1 as horse moves through left half
+            const rotationAdjustment = Math.sin(leftPositionFactor * Math.PI) * 0.75; // Small subtle adjustment
+            finalRotation = baseLeftRotation + rotationAdjustment;
+        } else {
+            // Normal rotation calculation for right half
+            finalRotation = trackPos.rotation + Math.PI/2;
+        }
+        
+        this.sprite.rotation = finalRotation;
         
         // Update name text position
         if (this.nameText) {
