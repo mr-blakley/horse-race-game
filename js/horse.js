@@ -179,8 +179,13 @@ class Horse {
             padding: { x: 2, y: 1 }
         });
         
+        // Set a high depth value to ensure name labels appear on top of other elements like the logo
+        this.nameText.setDepth(1000);
+        
         // Create connecting line
         this.connectingLine = this.scene.add.graphics();
+        // Set connecting line depth to be just below the name text
+        this.connectingLine.setDepth(999);
         
         // Group all elements
         this.group = this.scene.add.group([this.sprite, this.laneText, this.nameText, this.connectingLine]);
@@ -308,6 +313,9 @@ class Horse {
             const verticalVariation = -40 - (this.lane * 5); 
             this.nameText.x = this.sprite.x - nameOffsetX + horizontalVariation;
             this.nameText.y = this.sprite.y - nameOffsetY + verticalVariation;
+            
+            // Ensure depth is maintained during updates
+            this.nameText.setDepth(1000);
         }
         
         // Update connecting line

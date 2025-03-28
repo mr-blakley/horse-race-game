@@ -231,24 +231,24 @@ class RaceScene extends Phaser.Scene {
             "Orchid Dream",     // Lane 3 (index 2) - Orchid
             "Shell Beach",      // Lane 4 (index 3) - Light Sea Green
             "Rose Runner",      // Lane 5 (index 4) - American Rose
-            "Dusty Trails",     // Lane 6 (index 5) - Tan
-            "Amber Flash",      // Lane 7 (index 6) - Dark Orange
+            "Dust Devil",     // Lane 6 (index 5) - Tan
+            "Amber Flare",      // Lane 7 (index 6) - Dark Orange
             "Green Lightning",  // Lane 8 (index 7) - Lime Green
             "Royal Thunder",    // Lane 9 (index 8) - Royal Blue
-            "Pink Dash",        // Lane 10 (index 9) - Hot Pink
-            "Silver Streak",    // Lane 11 (index 10) - Silver
+            "Pink Paladin",     // Lane 10 (index 9) - Hot Pink
+            "Silver Moon",    // Lane 11 (index 10) - Silver
             "Golden Arrow"      // Lane 12 (index 11) - Dark Goldenrod
         ];
         
         // Define fixed colors for each lane
         const fixedColors = [
-            "#000000", // Black
+            "#0f0f0f", // Black
             "#F5F5F5", // White Smoke
             "#DA70D6", // Orchid
             "#20B2AA", // Light Sea Green
             "#FF033E", // American Rose
-            "#D2B48C", // Tan
-            "#FF8C00", // Dark Orange
+            "#B2996E", // Tan
+            "#FFBF00", // Dark Orange
             "#32CD32", // Lime Green
             "#4169E1", // Royal Blue
             "#FF69B4", // Hot Pink
