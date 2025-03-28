@@ -30,7 +30,13 @@ class RaceScene extends Phaser.Scene {
         // Load horse silhouette
         this.load.image('horse', 'assets/full-horse.png');
         
-        console.log("Preloading horse image");
+        // Load crown of roses for winner
+        this.load.image('crown', 'assets/crown-of-roses.png');
+        
+        // Load JEL Derby logo
+        this.load.image('logo', 'assets/jel-derby-logo2.png');
+        
+        console.log("Preloading horse image and crown");
     }
     
     create() {
@@ -41,6 +47,16 @@ class RaceScene extends Phaser.Scene {
         this.trackBackground = this.add.image(0, 0, 'track').setOrigin(0, 0);
         this.trackBackground.displayWidth = this.scale.width;
         this.trackBackground.displayHeight = this.scale.height;
+        
+        // Add JEL Derby logo in the center of the track
+        this.logo = this.add.image(this.trackCenterX, this.trackCenterY, 'logo');
+        // Scale the logo to fit nicely in the center of the track
+        const logoScale = Math.min(this.trackWidth, this.trackHeight) * 0.0015 * 1.25; // Increased by 25%
+        this.logo.setScale(logoScale);
+        // Set logo depth to be behind horses but above track
+        this.logo.setDepth(5);
+        // Add slight transparency
+        this.logo.setAlpha(0.70);
         
         // Add finish line
         this.finishLine = this.add.graphics();
@@ -80,6 +96,9 @@ class RaceScene extends Phaser.Scene {
             stroke: '#000',
             strokeThickness: 6
         }).setOrigin(0.5, 0.5).setAlpha(0);
+        
+        // Set a high depth value to ensure countdown appears above everything else
+        this.countdownText.setDepth(100);
         
         // Initialize horse list display
         this.initHorseList();
@@ -407,8 +426,38 @@ class RaceScene extends Phaser.Scene {
             resultsContainer.style.display = 'block';
             console.log('Showing results panel container after race');
             
+            // Create a container for the winner section with crown background
+            const winnerContainer = document.createElement('div');
+            winnerContainer.className = 'winner-container';
+            
+            // Create a crown image element
+            const crownImg = document.createElement('img');
+            crownImg.src = 'assets/crown-of-roses.png';
+            crownImg.className = 'crown-image';
+            winnerContainer.appendChild(crownImg);
+            
+            // Add winner information
+            const winner = this.finishedHorses[0];
+            const winnerTime = ((winner.finishTime - this.raceStartTime) / 1000).toFixed(2);
+            
+            const winnerInfo = document.createElement('div');
+            winnerInfo.className = 'winner-info';
+            winnerInfo.innerHTML = `
+                <h2>Winner!</h2>
+                <div class="winner-name" style="color: #${winner.color.toString(16).padStart(6, '0')}">
+                    ${winner.name}
+                </div>
+                <div class="winner-time">Time: ${winnerTime}s</div>
+            `;
+            winnerContainer.appendChild(winnerInfo);
+            
+            // Add the winner container to results
+            resultsContent.appendChild(winnerContainer);
+            
+            // Add the rest of the results
             const resultsTitle = document.createElement('h2');
             resultsTitle.textContent = 'Race Results';
+            resultsTitle.className = 'results-title';
             resultsContent.appendChild(resultsTitle);
 
             this.finishedHorses.forEach((horse, index) => {

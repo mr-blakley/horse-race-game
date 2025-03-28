@@ -47,8 +47,9 @@ canvas {
     align-items: center;
     justify-content: space-between;
     height: auto;
-    max-height: 60px;
+    max-height: 70px;
     border-bottom: 2px solid #f1c40f;
+    overflow: hidden; /* Prevent content from overflowing */
 }
 
 .side-panel {
@@ -65,7 +66,7 @@ canvas {
 
 .horse-panel {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas: "header list controls";
     gap: 15px;
     width: 100%;
@@ -92,55 +93,10 @@ canvas {
 .horse-panel .scrollable-content {
     grid-area: list;
     margin-bottom: 0;
-    overflow-x: auto;
+    overflow: hidden;
     max-height: none;
     white-space: nowrap;
-}
-
-.horse-panel .race-controls {
-    grid-area: controls;
-    border-top: none;
-    border-left: 1px solid rgba(241, 196, 15, 0.5);
-    padding-top: 0;
-    padding-left: 15px;
-    margin-top: 0;
-    display: flex;
-    align-items: center;
-}
-
-.results-panel {
-    display: none;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 60%;
-    max-width: 500px;
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-    border: 2px solid #1a5276;
-    z-index: 100;
-}
-
-.panel-header {
-    border-bottom: 2px solid #1a5276;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
-
-.panel-header h2 {
-    color: #1a5276;
-    font-size: 16px;
-    text-align: center;
-    margin: 0;
-}
-
-.scrollable-content {
-    overflow-y: auto;
-    max-height: 300px;
-    padding-right: 5px;
+    width: 100%;
 }
 
 #horse-list {
@@ -148,8 +104,10 @@ canvas {
     flex-direction: row;
     flex-wrap: nowrap;
     gap: 15px;
-    overflow-x: hidden; /* Hide horizontal scrollbar */
-    overflow-y: hidden; /* Hide vertical scrollbar */
+    overflow: hidden;
+    width: 100%;
+    padding: 0 5px;
+    justify-content: space-around;
 }
 
 .horse-item {
@@ -161,7 +119,9 @@ canvas {
     transition: background-color 0.2s;
     position: relative;
     white-space: nowrap;
-    min-width: max-content;
+    flex: 1;
+    max-width: fit-content;
+    justify-content: center;
 }
 
 .horse-item:hover {
@@ -182,10 +142,22 @@ canvas {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 0.85em;
+    font-size: 0.9em;
     color: #fff;
     text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
     font-family: 'Georgia', serif;
+    max-width: 100%;
+}
+
+.horse-panel .race-controls {
+    grid-area: controls;
+    border-top: none;
+    border-left: 1px solid rgba(241, 196, 15, 0.5);
+    padding-top: 0;
+    padding-left: 15px;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
 }
 
 .race-controls {
@@ -305,6 +277,107 @@ canvas {
 .result-time {
     font-size: 1.1em;
     color: #555;
+}
+
+/* Winner display with crown of roses */
+.winner-container {
+    position: relative;
+    background-color: #f8f4e3;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.crown-image {
+    width: 400px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    opacity: 0.8;
+}
+
+.winner-info {
+    position: relative;
+    z-index: 2;
+    padding: 20px;
+    border-radius: 7px;
+    margin: 0 auto;
+    max-width: 80%;
+}
+
+.winner-info h2 {
+    margin-top: 0;
+    color: #0e0c02;
+    font-size: 36px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.winner-name {
+    font-family: Georgia, serif;
+    font-size: 42px;
+    font-weight: bold;
+    margin: 10px 0;
+    text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.8);
+}
+
+.winner-time {
+    font-size: 22px;
+    color: #0a0000;
+    margin-bottom: 10px;
+    padding-top: 10px;
+}
+
+.results-title {
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
+}
+
+.results-panel {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    max-width: 500px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    border: 2px solid #1a5276;
+    z-index: 100;
+}
+
+.panel-header {
+    border-bottom: 2px solid #1a5276;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.panel-header h2 {
+    color: #1a5276;
+    font-size: 16px;
+    text-align: center;
+    margin: 0;
+}
+
+.scrollable-content {
+    overflow-y: auto;
+    max-height: 300px;
+    padding-right: 5px;
 }
 
 /* Media query for smaller screens */
